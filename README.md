@@ -162,16 +162,6 @@ npm run dev
 
 ---
 
-## Cost Estimate
-
-| Usage | Anthropic API Cost |
-|-------|-------------------|
-| 100 submissions/month | ~£10-25 |
-| 500 submissions/month | ~£50-125 |
-| 1000 submissions/month | ~£100-250 |
-
----
-
 ## Privacy & Data
 
 - **Files stay in SharePoint** — The system reads content but doesn't store files
