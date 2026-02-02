@@ -1,10 +1,10 @@
-// Demo submission data for proof of concept
+// Demo submission data with detailed reports
 // In production, this would come from Supabase
 
-import { STUDENTS, getGroupById, getTeacherById } from './demo';
+import { STUDENTS, getGroupById, getTeacherById, GROUPS } from './demo';
 import { getAssignmentById } from './units';
 
-// Sample submission data
+// Detailed demo submission - like the Sahil analysis
 const DEMO_SUBMISSIONS = [
   {
     id: 'sub1',
@@ -14,247 +14,407 @@ const DEMO_SUBMISSIONS = [
     submittedAt: '2025-10-14T14:34:00Z',
     status: 'complete',
     originalityScore: 62,
+    originalityVerdict: 'High concern',
+    likelyAITool: 'ChatGPT',
+    confidenceLevel: 'High',
     gradeEstimate: 'Pass',
     priorityFlag: 'red',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'partial',
-      M1: 'partial', M2: 'not_met',
-      D1: 'not_met'
+    
+    detailedOriginalityAnalysis: {
+      summary: 'This submission shows strong indicators of AI-generated content, particularly ChatGPT. The vocabulary is significantly above expected BTEC Level 3 standard, structural patterns are highly uniform, and multiple signature AI phrases appear throughout. A copy-paste error ("Qatar Telecom") provides strong evidence of content sourced from elsewhere.',
+      keyEvidence: [
+        {
+          type: 'Copy-Paste Error',
+          severity: 'High',
+          description: 'The phrase "Qatar Telecom" appears in the middle of the LOROS charity section, which is completely unrelated to the assignment about Apple and LOROS.',
+          examples: [
+            '...LOROS demonstrates strong stakeholder engagement through Qatar Telecom their volunteer coordination program...'
+          ],
+          whyItMatters: 'This is a clear indicator that text was copied from a different source (likely an AI response about telecommunications) without proper review. A student writing their own work would not make this error.'
+        },
+        {
+          type: 'AI Signature Phrases',
+          severity: 'High',
+          description: 'The phrase "all things considered" appears 5 times throughout the document. This is a highly characteristic ChatGPT phrase rarely used by BTEC Level 3 students.',
+          examples: [
+            '...all things considered, Apple\'s stakeholder management represents a multifaceted approach...',
+            '...all things considered, the communication strategies employed demonstrate significant sophistication...'
+          ],
+          whyItMatters: 'This phrase frequency is statistically unlikely in authentic student work. ChatGPT uses this as a transitional phrase excessively.'
+        },
+        {
+          type: 'Vocabulary Mismatch',
+          severity: 'High',
+          description: 'Multiple sophisticated terms appear that are inconsistent with the student\'s expected ability level and previous work.',
+          examples: [
+            '"compartmentalised organisational structure"',
+            '"multifaceted stakeholder ecosystem"',
+            '"paradigm of corporate governance"'
+          ],
+          whyItMatters: 'A mid-ability BTEC Level 3 student would not typically use these terms. The vocabulary is more consistent with MBA-level writing or AI-generated business content.'
+        },
+        {
+          type: 'Structural Pattern',
+          severity: 'Medium',
+          description: 'Every stakeholder section follows an identical three-paragraph structure: introduction of stakeholder, analysis of relationship, concluding summary.',
+          examples: [
+            'Each section begins with "The [stakeholder] plays a crucial role in..."',
+            'Each section ends with "All things considered, [stakeholder] engagement demonstrates..."'
+          ],
+          whyItMatters: 'This formulaic consistency is characteristic of AI-generated content. Authentic student work typically shows more variation in approach across sections.'
+        }
+      ],
+      authenticElements: [
+        {
+          type: 'Spelling error',
+          description: 'The word "Defenition" appears misspelled in the introduction',
+          example: 'Defenition of a stakeholder'
+        },
+        {
+          type: 'Local knowledge',
+          description: 'Reference to Leicester Highcross Apple Store suggests some genuine local research',
+          example: 'Apple\'s presence in Leicester Highcross shopping centre'
+        },
+        {
+          type: 'Inconsistent formatting',
+          description: 'Date formats vary between sections (12/03/24 vs March 12th)',
+          example: 'Mix of UK and US date formats'
+        }
+      ]
     },
-    flags: [
-      { type: 'ai_content', severity: 'high', message: 'AI-generated content detected in M1 assessment sections' },
-      { type: 'copy_paste', severity: 'high', message: 'Copy-paste error: "Qatar Telecom" appears mid-text' },
-      { type: 'vocabulary', severity: 'medium', message: 'Vocabulary mismatch: "compartmentalised structure" beyond expected level' }
+    
+    sectionAnalysis: [
+      {
+        sectionTitle: 'P1 - Business Features',
+        originalityAssessment: 'Mixed',
+        concerns: ['Sophisticated vocabulary in Apple analysis', 'Generic descriptions that could apply to any tech company'],
+        positives: ['Local Apple Store reference', 'Basic structure is appropriate']
+      },
+      {
+        sectionTitle: 'P2 - Stakeholder Influence',
+        originalityAssessment: 'Likely AI',
+        concerns: ['Qatar Telecom copy-paste error', '"All things considered" appears 3 times', 'Analysis is generic'],
+        positives: ['Correct stakeholders identified']
+      },
+      {
+        sectionTitle: 'M1 - Assessment of Relationships',
+        originalityAssessment: 'Likely AI',
+        concerns: ['MBA-level vocabulary', 'Formulaic structure', 'No evidence of independent research'],
+        positives: []
+      }
     ],
-    authenticElements: [
-      'Spelling error "Defenition" suggests human input',
-      'Local reference to Leicester Highcross Apple Store',
-      'Inconsistent date formatting (human error pattern)'
+    
+    criteriaAssessment: {
+      P1: {
+        status: 'Met',
+        evidence: 'Two contrasting businesses (Apple and LOROS) are identified and their features explained.',
+        gaps: 'Explanations are somewhat generic and could benefit from more specific examples.',
+        quote: 'Apple operates as a multinational technology corporation with a compartmentalised organisational structure...'
+      },
+      P2: {
+        status: 'Met',
+        evidence: 'Stakeholder influence is explained for both businesses.',
+        gaps: 'The analysis lacks specific, evidenced examples of how stakeholders have actually influenced decisions.',
+        quote: 'Shareholders exert considerable influence through their voting rights at annual general meetings...'
+      },
+      M1: {
+        status: 'Partially Met',
+        evidence: 'Some assessment of relationships is present.',
+        gaps: 'Assessment is generic and lacks independent research. No specific examples, data, or external sources cited. The "Qatar Telecom" error suggests content was not carefully reviewed.',
+        quote: 'The relationship between Apple and its customers demonstrates a multifaceted paradigm of engagement...'
+      },
+      M2: {
+        status: 'Not Met',
+        evidence: 'No evidence found in submission.',
+        gaps: 'M2 criteria not addressed. Student may have misunderstood assignment requirements.',
+        quote: null
+      },
+      D1: {
+        status: 'Not Met',
+        evidence: 'No evaluation present.',
+        gaps: 'D1 requires evaluation with specific recommendations. This level of critical analysis is absent.',
+        quote: null
+      }
+    },
+    
+    gradeJustification: 'P1 and P2 criteria are met at a basic level. M1 is only partially met due to lack of independent research and generic analysis. M2 and D1 are not addressed. Under BTEC rules, the grade is limited by the lowest achieved criterion, resulting in a Pass grade. However, originality concerns should be addressed before confirming this grade.',
+    
+    recommendations: [
+      {
+        priority: 'High',
+        action: 'Conduct a face-to-face discussion with the student about the originality concerns',
+        reason: 'Multiple high-severity indicators require clarification before the grade can be confirmed'
+      },
+      {
+        priority: 'High',
+        action: 'Ask student to explain the "Qatar Telecom" reference',
+        reason: 'This is the clearest indicator of copied content and should be addressed directly'
+      },
+      {
+        priority: 'Medium',
+        action: 'Request evidence of research sources',
+        reason: 'M1 requires independent research which is not currently evidenced'
+      },
+      {
+        priority: 'Medium',
+        action: 'Compare with student\'s previous work',
+        reason: 'To assess if vocabulary level is consistent with their established ability'
+      }
     ],
+    
+    questionsForStudent: [
+      {
+        question: 'Can you explain what you meant by "compartmentalised organisational structure"?',
+        purpose: 'Test if student understands the vocabulary they used',
+        expectedResponse: 'A genuine student would explain in simpler terms. Difficulty explaining suggests copied content.'
+      },
+      {
+        question: 'I noticed you mentioned Qatar Telecom in your LOROS section - can you explain why?',
+        purpose: 'Direct question about the copy-paste error',
+        expectedResponse: 'An honest student may admit to the error. Confusion or deflection suggests lack of awareness of their own content.'
+      },
+      {
+        question: 'What sources did you use for your research on Apple\'s stakeholder relationships?',
+        purpose: 'Verify research was actually conducted',
+        expectedResponse: 'Should be able to name specific websites, articles, or other sources. Vague answers suggest AI-generated content.'
+      },
+      {
+        question: 'You used the phrase "all things considered" several times - is that a phrase you commonly use?',
+        purpose: 'Check awareness of writing style',
+        expectedResponse: 'Most students would not recognise this as unusual if they wrote it themselves.'
+      }
+    ],
+    
+    summary: 'This submission shows significant originality concerns with high confidence of ChatGPT usage. Key evidence includes a copy-paste error (Qatar Telecom), excessive use of AI signature phrases, and vocabulary significantly above expected level. While P1 and P2 criteria are technically met, a face-to-face discussion is strongly recommended before confirming any grade. The student should be asked about specific content and sources.',
+    
     wordCount: 4832,
-    summary: 'Significant originality concerns with AI-generated content detected. Pass criteria met but Merit criteria lacking evidence.',
-    reviewed: false
+    reviewed: false,
+    
+    localAnalysis: {
+      wordCount: 4832,
+      foundPhrases: [
+        { text: 'all things considered', weight: 3, tool: 'ChatGPT', count: 5 },
+        { text: 'multifaceted', weight: 2, tool: 'ChatGPT', count: 3 },
+        { text: 'paradigm', weight: 2, tool: 'ChatGPT', count: 2 },
+        { text: 'plays a crucial role', weight: 2, tool: 'ChatGPT', count: 4 },
+        { text: 'holistic approach', weight: 2, tool: 'Generic', count: 2 }
+      ],
+      totalIndicatorWeight: 28,
+      vocabulary: {
+        sophisticatedWords: [
+          { word: 'compartmentalised', count: 2 },
+          { word: 'paradigm', count: 2 }
+        ]
+      },
+      structure: {
+        paragraphCount: 47,
+        sentenceCount: 198,
+        avgSentenceLength: 24,
+        uniformityScore: '72'
+      },
+      copyPasteErrors: [
+        { type: 'Out of context reference', found: 'Qatar Telecom', context: '...LOROS demonstrates strong stakeholder engagement through Qatar Telecom their volunteer coordination program...' }
+      ]
+    }
   },
+  
+  // More concise entries for other submissions
   {
     id: 'sub2',
-    studentId: 'student1',
-    assignmentId: 'unit1-cd',
-    fileName: 'Unit1_Assignment_CD.docx',
-    submittedAt: '2025-11-20T09:15:00Z',
-    status: 'complete',
-    originalityScore: 85,
-    gradeEstimate: 'Pass',
-    priorityFlag: 'yellow',
-    criteriaResults: {
-      P3: 'met', P4: 'met', P5: 'met', P6: 'met',
-      M3: 'partial',
-      D2: 'not_met', D3: 'not_met'
-    },
-    flags: [
-      { type: 'ai_phrases', severity: 'medium', message: 'Some AI indicator phrases detected but within acceptable range' }
-    ],
-    authenticElements: [
-      'Personal examples used throughout',
-      'Consistent writing style'
-    ],
-    wordCount: 3654,
-    summary: 'Minor originality concerns. Pass criteria achieved, Merit criteria partially evidenced.',
-    reviewed: false
-  },
-  {
-    id: 'sub3',
     studentId: 'student2',
     assignmentId: 'unit1-ab',
     fileName: 'Business_Features_Essay.docx',
     submittedAt: '2025-10-13T16:42:00Z',
     status: 'complete',
     originalityScore: 94,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: 'None detected',
+    confidenceLevel: 'High',
     gradeEstimate: 'Merit',
     priorityFlag: 'green',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'met',
-      M1: 'met', M2: 'met',
-      D1: 'partial'
+    
+    detailedOriginalityAnalysis: {
+      summary: 'This submission shows strong indicators of authentic student work. Vocabulary is appropriate for BTEC Level 3, the writing style is consistent throughout, and personal voice is evident. Minor issues do not indicate AI usage.',
+      keyEvidence: [],
+      authenticElements: [
+        { type: 'Personal voice', description: 'First-person reflections appear naturally', example: 'I found it interesting that...' },
+        { type: 'Local research', description: 'Specific local business examples used', example: 'Reference to specific Leicester businesses' },
+        { type: 'Appropriate vocabulary', description: 'Language level matches expected ability', example: 'Clear, simple explanations throughout' }
+      ]
     },
-    flags: [],
-    authenticElements: [
-      'Strong personal voice throughout',
-      'Original research with local business examples',
-      'Consistent quality across sections'
+    
+    criteriaAssessment: {
+      P1: { status: 'Met', evidence: 'Clear explanations of business features', gaps: null, quote: null },
+      P2: { status: 'Met', evidence: 'Stakeholder influence well explained', gaps: null, quote: null },
+      M1: { status: 'Met', evidence: 'Good assessment with some research', gaps: 'Could include more sources', quote: null },
+      M2: { status: 'Met', evidence: 'Communication methods assessed', gaps: null, quote: null },
+      D1: { status: 'Partially Met', evidence: 'Some evaluation present', gaps: 'Recommendations need more depth', quote: null }
+    },
+    
+    gradeJustification: 'All Pass and Merit criteria met. D1 partially met, limiting grade to Merit.',
+    recommendations: [
+      { priority: 'Low', action: 'Encourage student to develop evaluation skills for Distinction', reason: 'Close to achieving D1' }
     ],
+    questionsForStudent: [],
+    summary: 'Excellent authentic submission achieving Merit level. Strong personal voice and appropriate research evident.',
     wordCount: 5120,
-    summary: 'Excellent submission with high originality. Merit criteria achieved, approaching Distinction.',
     reviewed: true,
     reviewedAt: '2025-10-15T10:00:00Z'
   },
+  
   {
-    id: 'sub4',
+    id: 'sub3',
     studentId: 'student3',
     assignmentId: 'unit1-ab',
     fileName: 'Unit1_Submission.docx',
     submittedAt: '2025-10-12T11:20:00Z',
     status: 'complete',
     originalityScore: 45,
+    originalityVerdict: 'High concern',
+    likelyAITool: 'ChatGPT',
+    confidenceLevel: 'High',
     gradeEstimate: 'Fail',
     priorityFlag: 'red',
-    criteriaResults: {
-      P1: 'met', P2: 'not_met', P3: 'not_met',
-      M1: 'not_met', M2: 'not_met',
-      D1: 'not_met'
+    
+    detailedOriginalityAnalysis: {
+      summary: 'Significant originality concerns combined with incomplete work. The submitted content shows high AI likelihood throughout, and P2 criteria is not addressed at all, resulting in automatic Fail.',
+      keyEvidence: [
+        { type: 'AI Signature Phrases', severity: 'High', description: 'Multiple ChatGPT indicators throughout', examples: ['"In essence..."', '"It is worth noting..."'], whyItMatters: 'Consistent AI writing patterns' },
+        { type: 'Incomplete submission', severity: 'High', description: 'P2 criteria entirely missing', examples: ['No stakeholder influence section'], whyItMatters: 'Cannot achieve Pass without all P criteria' }
+      ],
+      authenticElements: []
     },
-    flags: [
-      { type: 'ai_content', severity: 'high', message: 'High AI likelihood throughout submission' },
-      { type: 'incomplete', severity: 'high', message: 'P2 not addressed - stakeholder influence missing' },
-      { type: 'word_count', severity: 'medium', message: 'Significantly under expected word count (890 words)' }
+    
+    criteriaAssessment: {
+      P1: { status: 'Met', evidence: 'Basic business features explained', gaps: 'Superficial', quote: null },
+      P2: { status: 'Not Met', evidence: 'Not addressed in submission', gaps: 'Entire section missing', quote: null },
+      M1: { status: 'Not Met', evidence: 'No assessment present', gaps: null, quote: null }
+    },
+    
+    gradeJustification: 'P2 criteria not met results in automatic Fail regardless of other achievement.',
+    recommendations: [
+      { priority: 'High', action: 'Discuss submission with student', reason: 'Originality concerns and incomplete work' },
+      { priority: 'High', action: 'Clarify assignment requirements', reason: 'Student may have misunderstood P2' }
     ],
-    authenticElements: [],
+    questionsForStudent: [
+      { question: 'Why is there no stakeholder influence section?', purpose: 'Understand if this was intentional', expectedResponse: 'May indicate confusion about requirements' }
+    ],
+    summary: 'High originality concern and incomplete submission. P2 not addressed = Fail. Requires urgent discussion.',
     wordCount: 890,
-    summary: 'Serious concerns. High AI likelihood and incomplete submission. P2 criteria not met resulting in Fail grade.',
     reviewed: false
   },
+  
   {
-    id: 'sub5',
+    id: 'sub4',
     studentId: 'student4',
     assignmentId: 'unit1-ab',
     fileName: 'Exploring_Business.docx',
     submittedAt: '2025-10-14T09:00:00Z',
     status: 'complete',
     originalityScore: 91,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: 'None detected',
+    confidenceLevel: 'High',
     gradeEstimate: 'Distinction',
     priorityFlag: 'green',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'met',
-      M1: 'met', M2: 'met',
-      D1: 'met'
+    
+    detailedOriginalityAnalysis: {
+      summary: 'Outstanding authentic work. Strong evidence of independent research, critical thinking, and personal engagement with the topic.',
+      keyEvidence: [],
+      authenticElements: [
+        { type: 'Original research', description: 'Primary research conducted', example: 'Visited local LOROS shop and interviewed volunteer' },
+        { type: 'Critical analysis', description: 'Genuine evaluation present', example: 'Thoughtful recommendations based on evidence' }
+      ]
     },
-    flags: [],
-    authenticElements: [
-      'Extensive independent research demonstrated',
-      'Critical analysis throughout',
-      'Original case study comparisons'
-    ],
+    
+    criteriaAssessment: {
+      P1: { status: 'Met', evidence: 'Excellent feature explanations', gaps: null, quote: null },
+      P2: { status: 'Met', evidence: 'Comprehensive stakeholder analysis', gaps: null, quote: null },
+      M1: { status: 'Met', evidence: 'Strong independent research', gaps: null, quote: null },
+      M2: { status: 'Met', evidence: 'Detailed assessment', gaps: null, quote: null },
+      D1: { status: 'Met', evidence: 'Excellent evaluation with recommendations', gaps: null, quote: null }
+    },
+    
+    gradeJustification: 'All criteria met at required levels including Distinction.',
+    recommendations: [],
+    questionsForStudent: [],
+    summary: 'Exemplary submission achieving Distinction. Strong original research and critical thinking demonstrated.',
     wordCount: 6230,
-    summary: 'Outstanding submission. All criteria met including Distinction level analysis.',
     reviewed: true,
     reviewedAt: '2025-10-16T14:30:00Z'
   },
+  
   {
-    id: 'sub6',
+    id: 'sub5',
     studentId: 'student5',
     assignmentId: 'unit1-ab',
     fileName: 'Assignment1.docx',
     submittedAt: '2025-10-15T13:45:00Z',
     status: 'complete',
     originalityScore: 78,
+    originalityVerdict: 'Moderate concern',
+    likelyAITool: 'Possibly ChatGPT',
+    confidenceLevel: 'Medium',
     gradeEstimate: 'Pass',
     priorityFlag: 'red',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'partial',
-      M1: 'not_met', M2: 'not_met',
-      D1: 'not_met'
+    
+    detailedOriginalityAnalysis: {
+      summary: 'Below originality threshold with some AI indicators. Analysis sections appear to use AI assistance but introduction seems genuine.',
+      keyEvidence: [
+        { type: 'AI assistance likely', severity: 'Medium', description: 'Analysis sections show AI patterns', examples: ['Formulaic paragraph structure in M1'], whyItMatters: 'Inconsistent quality between sections' }
+      ],
+      authenticElements: [
+        { type: 'Genuine introduction', description: 'Opening section appears student-written', example: 'Personal tone in first paragraphs' }
+      ]
     },
-    flags: [
-      { type: 'ai_content', severity: 'medium', message: 'AI assistance likely in analysis sections' },
-      { type: 'generic', severity: 'medium', message: 'Analysis is generic, could apply to any business' }
+    
+    criteriaAssessment: {
+      P1: { status: 'Met', evidence: 'Features explained', gaps: null, quote: null },
+      P2: { status: 'Met', evidence: 'Stakeholders covered', gaps: null, quote: null },
+      M1: { status: 'Not Met', evidence: 'Generic analysis', gaps: 'Lacks independent research evidence', quote: null }
+    },
+    
+    gradeJustification: 'Pass criteria met but Merit criteria not evidenced sufficiently.',
+    recommendations: [
+      { priority: 'Medium', action: 'Discuss originality concerns with student', reason: 'Below 80% threshold' },
+      { priority: 'Medium', action: 'Request research evidence', reason: 'M1 lacks independent research' }
     ],
-    authenticElements: [
-      'Introduction appears genuine',
-      'Some personal observations included'
+    questionsForStudent: [
+      { question: 'Can you show me the sources you used for your analysis?', purpose: 'Verify research', expectedResponse: 'Should be able to provide sources' }
     ],
+    summary: 'Below originality threshold (78%). Pass criteria met but worth discussing with student.',
     wordCount: 3200,
-    summary: 'Below originality threshold. Pass criteria met but lacks depth for higher grades.',
     reviewed: false
   },
+  
+  // Pending submissions
   {
-    id: 'sub7',
+    id: 'sub6',
     studentId: 'student6',
     assignmentId: 'unit1-ab',
     fileName: 'Business_Unit1.docx',
-    submittedAt: '2025-10-14T16:20:00Z',
-    status: 'complete',
-    originalityScore: 88,
-    gradeEstimate: 'Merit',
-    priorityFlag: 'yellow',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'met',
-      M1: 'met', M2: 'partial',
-      D1: 'not_met'
-    },
-    flags: [
-      { type: 'structure', severity: 'low', message: 'Some formulaic paragraph structures' }
-    ],
-    authenticElements: [
-      'Good use of local examples',
-      'Personal reflection evident'
-    ],
-    wordCount: 4500,
-    summary: 'Solid submission. Merit criteria mostly achieved with room for improvement on M2.',
-    reviewed: false
-  },
-  {
-    id: 'sub8',
-    studentId: 'student7',
-    assignmentId: 'unit1-ab',
-    fileName: 'Unit1_Work.docx',
-    submittedAt: '2025-10-13T10:00:00Z',
-    status: 'complete',
-    originalityScore: 72,
-    gradeEstimate: 'Pass',
-    priorityFlag: 'red',
-    criteriaResults: {
-      P1: 'met', P2: 'met', P3: 'partial',
-      M1: 'partial', M2: 'not_met',
-      D1: 'not_met'
-    },
-    flags: [
-      { type: 'ai_content', severity: 'high', message: 'Multiple AI signature phrases detected' },
-      { type: 'inconsistent', severity: 'medium', message: 'Quality varies significantly between sections' }
-    ],
-    authenticElements: [
-      'Some genuine errors suggest partial human input'
-    ],
-    wordCount: 3800,
-    summary: 'Originality concerns. Pass achieved but evidence of significant AI assistance.',
-    reviewed: false
-  },
-  // Add some pending submissions
-  {
-    id: 'sub9',
-    studentId: 'student8',
-    assignmentId: 'unit1-ab',
-    fileName: 'My_Assignment.docx',
     submittedAt: '2025-10-15T15:30:00Z',
-    status: 'processing',
-    originalityScore: null,
-    gradeEstimate: null,
-    priorityFlag: null,
-    criteriaResults: {},
-    flags: [],
-    authenticElements: [],
-    wordCount: null,
-    summary: null,
-    reviewed: false
-  },
-  {
-    id: 'sub10',
-    studentId: 'student9',
-    assignmentId: 'unit1-ab',
-    fileName: 'Business_Essay.docx',
-    submittedAt: '2025-10-15T15:45:00Z',
     status: 'pending',
     originalityScore: null,
     gradeEstimate: null,
     priorityFlag: null,
-    criteriaResults: {},
-    flags: [],
-    authenticElements: [],
-    wordCount: null,
-    summary: null,
+    reviewed: false
+  },
+  {
+    id: 'sub7',
+    studentId: 'student7',
+    assignmentId: 'unit1-ab',
+    fileName: 'My_Assignment.docx',
+    submittedAt: '2025-10-15T15:45:00Z',
+    status: 'processing',
+    originalityScore: null,
+    gradeEstimate: null,
+    priorityFlag: null,
     reviewed: false
   }
 ];
 
-// In-memory store for submissions (for POC)
+// In-memory store
 let submissions = [...DEMO_SUBMISSIONS];
 
 // Get all submissions
@@ -273,28 +433,11 @@ export function getSubmissionsByStudent(studentId) {
   return submissions.filter(s => s.studentId === studentId).map(enrichSubmission);
 }
 
-// Get submissions by assignment
-export function getSubmissionsByAssignment(assignmentId) {
-  return submissions.filter(s => s.assignmentId === assignmentId).map(enrichSubmission);
-}
-
-// Get submissions by group
-export function getSubmissionsByGroup(groupId) {
-  const groupStudents = STUDENTS.filter(s => s.groupId === groupId).map(s => s.id);
-  return submissions.filter(s => groupStudents.includes(s.studentId)).map(enrichSubmission);
-}
-
-// Get submissions by teacher (all their groups)
+// Get submissions by teacher
 export function getSubmissionsByTeacher(teacherId) {
   const teacherGroups = GROUPS.filter(g => g.teacherId === teacherId).map(g => g.id);
   const teacherStudents = STUDENTS.filter(s => teacherGroups.includes(s.groupId)).map(s => s.id);
   return submissions.filter(s => teacherStudents.includes(s.studentId)).map(enrichSubmission);
-}
-
-// Get submissions by course
-export function getSubmissionsByCourse(courseId) {
-  const courseStudents = STUDENTS.filter(s => s.course === courseId).map(s => s.id);
-  return submissions.filter(s => courseStudents.includes(s.studentId)).map(enrichSubmission);
 }
 
 // Add a new submission
@@ -304,16 +447,13 @@ export function addSubmission(submission) {
     status: 'pending',
     submittedAt: new Date().toISOString(),
     reviewed: false,
-    flags: [],
-    authenticElements: [],
-    criteriaResults: {},
     ...submission
   };
   submissions.push(newSub);
   return enrichSubmission(newSub);
 }
 
-// Update submission (e.g., after analysis)
+// Update submission
 export function updateSubmission(submissionId, updates) {
   const index = submissions.findIndex(s => s.id === submissionId);
   if (index !== -1) {
@@ -323,7 +463,7 @@ export function updateSubmission(submissionId, updates) {
   return null;
 }
 
-// Mark submission as reviewed
+// Mark reviewed
 export function markReviewed(submissionId) {
   return updateSubmission(submissionId, {
     reviewed: true,
@@ -331,7 +471,7 @@ export function markReviewed(submissionId) {
   });
 }
 
-// Enrich submission with related data
+// Enrich with related data
 function enrichSubmission(sub) {
   const student = STUDENTS.find(s => s.id === sub.studentId);
   const group = student ? getGroupById(student.groupId) : null;
@@ -350,30 +490,19 @@ function enrichSubmission(sub) {
 
 // Get triage counts
 export function getTriageCounts(submissionsList) {
-  const counts = {
-    red: 0,
-    yellow: 0,
-    green: 0,
-    pending: 0,
-    total: submissionsList.length
-  };
+  const counts = { red: 0, yellow: 0, green: 0, pending: 0, total: submissionsList.length };
   
   submissionsList.forEach(sub => {
-    if (sub.status === 'pending' || sub.status === 'processing') {
-      counts.pending++;
-    } else if (sub.priorityFlag === 'red') {
-      counts.red++;
-    } else if (sub.priorityFlag === 'yellow') {
-      counts.yellow++;
-    } else if (sub.priorityFlag === 'green') {
-      counts.green++;
-    }
+    if (sub.status === 'pending' || sub.status === 'processing') counts.pending++;
+    else if (sub.priorityFlag === 'red') counts.red++;
+    else if (sub.priorityFlag === 'yellow') counts.yellow++;
+    else if (sub.priorityFlag === 'green') counts.green++;
   });
   
   return counts;
 }
 
-// Get at-risk students (originality < 80% or Fail grade)
+// Get at-risk students
 export function getAtRiskStudents(submissionsList) {
   const studentRisk = {};
   
@@ -419,6 +548,3 @@ export function getAtRiskStudents(submissionsList) {
   
   return Object.values(studentRisk).filter(r => r.isAtRisk);
 }
-
-// Import GROUPS for internal use
-import { GROUPS } from './demo';
