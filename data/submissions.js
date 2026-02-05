@@ -1,110 +1,387 @@
-// Submissions data store
-// In production, this would be backed by a database (Supabase)
-// For now, uses in-memory store with demo data
+// Submission data — in production this comes from Supabase
+// Sample submissions use real student names for realistic demo
 
-let submissions = [];
+import { STUDENTS, getCohortById, getTeachersForUnitCohort, canTeacherSeeSubmission } from './staff';
+import { getAssignmentById, getUnitByNumber } from './units';
 
-// RAG classification thresholds
-const RAG_THRESHOLDS = {
-  RED: { originality: 80, gradeRequired: 'Fail' },
-  AMBER: { originality: 90, gradeRequired: 'Pass' },
-  GREEN: { originality: 90, gradeRequired: 'Merit' }
-};
+// ─── Sample Submissions ──────────────────────────────────────
+// Mix of RAG statuses across different cohorts/units for demo
+let SUBMISSIONS = [
+  // RED — High concern: AI content detected
+  {
+    id: 'sub-001',
+    studentId: 'bs1-04',  // Bharat: Prayas
+    assignmentId: 'unit8-a',
+    fileName: 'Unit8_AssignmentA_Prayas.docx',
+    submittedAt: '2025-10-03T14:34:00Z',
+    status: 'complete',
+    originalityScore: 58,
+    originalityVerdict: 'High concern',
+    likelyAITool: 'ChatGPT',
+    confidenceLevel: 'High',
+    gradeEstimate: 'Pass',
+    priorityFlag: 'red',
+    criteriaResults: { P1: 'met', P2: 'met', M1: 'partial', D1: 'not_met' },
+    flags: [
+      { type: 'ai_content', severity: 'high', message: 'AI-generated content detected in M1 assessment sections' },
+      { type: 'vocabulary', severity: 'high', message: 'Vocabulary significantly above expected BTEC L3 standard: "synergistic recruitment paradigm"' },
+      { type: 'structure', severity: 'medium', message: 'Unnaturally uniform paragraph structure throughout' },
+    ],
+    authenticElements: [
+      'Spelling error "recrutment" suggests some human input',
+      'Reference to local employer "Highcross Leicester" is specific and appropriate',
+    ],
+    summary: 'Significant originality concerns. Pass criteria met but Merit analysis appears AI-generated. Recommend discussion with student.',
+    recommendations: ['Conduct viva voce to verify understanding', 'Ask student to explain key concepts in own words', 'Check against previous submission style'],
+    questionsForStudent: ['Can you explain what you mean by "synergistic recruitment paradigm"?', 'Talk me through how you researched the recruitment process at your chosen business.'],
+    wordCount: 3842,
+    reviewed: false,
+  },
+  // RED — Fail grade
+  {
+    id: 'sub-002',
+    studentId: 'bs2-08',  // Khan: Rehan
+    assignmentId: 'unit14-a',
+    fileName: 'Unit14_AssA_Rehan.docx',
+    submittedAt: '2026-01-30T11:20:00Z',
+    status: 'complete',
+    originalityScore: 91,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Fail',
+    priorityFlag: 'red',
+    criteriaResults: { P1: 'met', P2: 'not_met', M1: 'not_met', D1: 'not_met' },
+    flags: [
+      { type: 'incomplete', severity: 'high', message: 'P2 not evidenced — no comparison of customer service in different businesses' },
+      { type: 'word_count', severity: 'medium', message: 'Word count (820) significantly below expected range (1500-2500)' },
+    ],
+    authenticElements: [
+      'Writing style consistent with student\'s previous work',
+      'Personal shopping experiences referenced naturally',
+      'Spelling and grammar errors consistent with expected level',
+    ],
+    summary: 'Work appears authentic but incomplete. P2 criterion not met, resulting in Fail. Student may need additional support or extension.',
+    recommendations: ['Check if student needs additional support', 'Consider extension if circumstances warrant', 'Review P2 requirements with student'],
+    questionsForStudent: [],
+    wordCount: 820,
+    reviewed: false,
+  },
+  // YELLOW — Borderline originality
+  {
+    id: 'sub-003',
+    studentId: 'bs1-12',  // Mahmood: Muhammad Imaad
+    assignmentId: 'unit5-ab',
+    fileName: 'Unit5_AB_Imaad.docx',
+    submittedAt: '2025-10-04T16:45:00Z',
+    status: 'complete',
+    originalityScore: 84,
+    originalityVerdict: 'Some concerns',
+    likelyAITool: 'Possibly ChatGPT',
+    confidenceLevel: 'Medium',
+    gradeEstimate: 'Pass',
+    priorityFlag: 'yellow',
+    criteriaResults: { P1: 'met', P2: 'met', P3: 'met', M1: 'partial', M2: 'not_met', D1: 'not_met' },
+    flags: [
+      { type: 'ai_phrases', severity: 'medium', message: 'Some AI indicator phrases detected: "it is important to note", "in today\'s globalised economy"' },
+    ],
+    authenticElements: [
+      'Local business examples from Leicester used throughout',
+      'Some grammatical errors consistent with L3 standard',
+      'Personal opinion sections show authentic voice',
+    ],
+    summary: 'Minor originality concerns. Pass criteria met. Some AI phrases detected but overall appears substantially student work.',
+    recommendations: ['Quick review sufficient', 'Note AI phrases for student feedback'],
+    questionsForStudent: [],
+    wordCount: 2956,
+    reviewed: false,
+  },
+  // YELLOW — Pass grade
+  {
+    id: 'sub-004',
+    studentId: 'bf3-09',  // Moataz: Rayan
+    assignmentId: 'unit22-a',
+    fileName: 'Unit22_AssA_Rayan.docx',
+    submittedAt: '2026-01-25T10:10:00Z',
+    status: 'complete',
+    originalityScore: 92,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Pass',
+    priorityFlag: 'yellow',
+    criteriaResults: { P1: 'met', M1: 'partial', D1: 'not_met' },
+    flags: [],
+    authenticElements: [
+      'Writing style natural and age-appropriate',
+      'Examples drawn from personal experience',
+    ],
+    summary: 'Authentic work at Pass level. M1 partially evidenced — student close to Merit with additional depth.',
+    recommendations: ['Provide feedback on how to strengthen M1 analysis'],
+    questionsForStudent: [],
+    wordCount: 1450,
+    reviewed: false,
+  },
+  // GREEN — Strong Merit
+  {
+    id: 'sub-005',
+    studentId: 'bs1-18',  // Sankhla: Raksha
+    assignmentId: 'unit8-a',
+    fileName: 'Unit8_AssA_Raksha.docx',
+    submittedAt: '2025-10-05T09:30:00Z',
+    status: 'complete',
+    originalityScore: 96,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Merit',
+    priorityFlag: 'green',
+    criteriaResults: { P1: 'met', P2: 'met', M1: 'met', D1: 'partial' },
+    flags: [],
+    authenticElements: [
+      'Consistent writing voice throughout',
+      'Strong use of PEEL structure taught in class',
+      'Appropriate business terminology for L3',
+      'Local examples from part-time job experience',
+    ],
+    summary: 'Strong authentic work at Merit standard. D1 partially evidenced — close to Distinction with more evaluative depth.',
+    recommendations: ['Mark with confidence', 'Provide D1 upgrade feedback'],
+    questionsForStudent: [],
+    wordCount: 3120,
+    reviewed: false,
+  },
+  // GREEN — Distinction
+  {
+    id: 'sub-006',
+    studentId: 'bf4-02',  // Allana: Aaishah
+    assignmentId: 'unit1-ab',
+    fileName: 'Unit1_AB_Aaishah.docx',
+    submittedAt: '2025-10-18T13:15:00Z',
+    status: 'complete',
+    originalityScore: 94,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Distinction',
+    priorityFlag: 'green',
+    criteriaResults: { P1: 'met', P2: 'met', P3: 'met', M1: 'met', M2: 'met', D1: 'met' },
+    flags: [],
+    authenticElements: [
+      'Excellent depth of analysis',
+      'Writing style consistent across all sections',
+      'Creative examples showing independent thinking',
+    ],
+    summary: 'Excellent authentic work at Distinction standard. All criteria met with strong evidence throughout.',
+    recommendations: ['Mark with confidence'],
+    questionsForStudent: [],
+    wordCount: 4210,
+    reviewed: false,
+  },
+  // GREEN — Co-taught unit (Unit 19, BS1 — visible to both David and Simon)
+  {
+    id: 'sub-007',
+    studentId: 'bs1-10',  // Itesh: Aksh
+    assignmentId: 'unit19-a',
+    fileName: 'Unit19_AssA_Aksh.docx',
+    submittedAt: '2026-02-22T15:00:00Z',
+    status: 'complete',
+    originalityScore: 93,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Merit',
+    priorityFlag: 'green',
+    criteriaResults: { P1: 'met', P2: 'met', M1: 'met', D1: 'partial' },
+    flags: [],
+    authenticElements: [
+      'Business pitch idea clearly personal and well-developed',
+      'Financial projections show reasonable understanding',
+    ],
+    summary: 'Authentic Merit-standard work on co-taught unit. Visible to both assigned teachers.',
+    recommendations: ['Mark with confidence'],
+    questionsForStudent: [],
+    wordCount: 2780,
+    reviewed: false,
+  },
+  // RED — Co-taught unit (Unit 14, BS2 — visible to both David and Simon)
+  {
+    id: 'sub-008',
+    studentId: 'bs2-01',  // Awan: Nail
+    assignmentId: 'unit14-a',
+    fileName: 'Unit14_AssA_Nail.docx',
+    submittedAt: '2026-01-31T08:50:00Z',
+    status: 'complete',
+    originalityScore: 65,
+    originalityVerdict: 'High concern',
+    likelyAITool: 'ChatGPT',
+    confidenceLevel: 'High',
+    gradeEstimate: 'Merit',
+    priorityFlag: 'red',
+    criteriaResults: { P1: 'met', P2: 'met', M1: 'met', D1: 'not_met' },
+    flags: [
+      { type: 'ai_content', severity: 'high', message: 'Substantial AI-generated content throughout P1 and M1 sections' },
+      { type: 'style_shift', severity: 'high', message: 'Dramatic style shift between introduction (simple) and body (highly sophisticated)' },
+    ],
+    authenticElements: [
+      'Introduction paragraph appears genuinely student-written',
+      'Handwritten notes referenced in submission suggest some engagement',
+    ],
+    summary: 'High originality concern on co-taught unit. Style shift strongly suggests AI assistance for main body. Both co-teachers should review.',
+    recommendations: ['Both co-teachers should discuss before student meeting', 'Conduct viva voce', 'Compare with student\'s in-class writing'],
+    questionsForStudent: ['Your introduction and main body have very different writing styles — can you explain your process?', 'Can you show me any notes or drafts you made?'],
+    wordCount: 3560,
+    reviewed: false,
+  },
+  // Pending submission
+  {
+    id: 'sub-009',
+    studentId: 'bf4-11',  // Imtihaz: Sahil
+    assignmentId: 'unit22-a',
+    fileName: 'Unit22_AssA_Sahil.docx',
+    submittedAt: '2026-01-26T16:55:00Z',
+    status: 'pending',
+    originalityScore: null,
+    gradeEstimate: null,
+    priorityFlag: null,
+    criteriaResults: {},
+    flags: [],
+    authenticElements: [],
+    summary: 'Awaiting analysis...',
+    wordCount: null,
+    reviewed: false,
+  },
+  // Another green from BF3
+  {
+    id: 'sub-010',
+    studentId: 'bf3-16',  // Rakesh: Neel
+    assignmentId: 'unit22-a',
+    fileName: 'Unit22_AssA_Neel.docx',
+    submittedAt: '2026-01-25T14:30:00Z',
+    status: 'complete',
+    originalityScore: 97,
+    originalityVerdict: 'Appears authentic',
+    likelyAITool: null,
+    confidenceLevel: 'Low',
+    gradeEstimate: 'Merit',
+    priorityFlag: 'green',
+    criteriaResults: { P1: 'met', M1: 'met', D1: 'partial' },
+    flags: [],
+    authenticElements: [
+      'Strong personal voice',
+      'Appropriate use of market research terminology',
+      'Examples from local businesses in Leicester',
+    ],
+    summary: 'Authentic Merit work. D1 partially evidenced.',
+    recommendations: ['Mark with confidence'],
+    questionsForStudent: [],
+    wordCount: 1680,
+    reviewed: false,
+  },
+];
 
-export function classifyRAG(originalityScore, estimatedGrade) {
-  if (originalityScore < RAG_THRESHOLDS.RED.originality || estimatedGrade === 'Fail') {
-    return 'RED';
-  }
-  if (originalityScore < RAG_THRESHOLDS.AMBER.originality || estimatedGrade === 'Pass') {
-    return 'AMBER';
-  }
-  return 'GREEN';
-}
+// ─── Enrichment ──────────────────────────────────────────────
+// Attach student, cohort, assignment, and unit info to each submission
 
-export function addSubmission(submission) {
-  const id = `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  const newSubmission = {
-    id,
-    ...submission,
-    submittedAt: new Date().toISOString(),
-    status: 'pending' // pending, analysing, complete, error
+function enrichSubmission(sub) {
+  const student = STUDENTS.find(s => s.id === sub.studentId);
+  const assignment = getAssignmentById(sub.assignmentId);
+  const cohort = student ? getCohortById(student.cohortId) : null;
+  const unit = assignment ? getUnitByNumber(assignment.unitNumber) : null;
+  const coTeachers = (unit && cohort) ? getTeachersForUnitCohort(unit.number, cohort.id) : [];
+
+  return {
+    ...sub,
+    student,
+    cohort,
+    assignment,
+    unit,
+    coTeachers,
+    cohortName: cohort?.name || 'Unknown',
+    unitTitle: unit ? `Unit ${unit.number}: ${unit.title}` : 'Unknown',
+    assignmentName: assignment?.name || 'Unknown',
   };
-  submissions.push(newSubmission);
-  return newSubmission;
 }
 
-export function updateSubmission(id, updates) {
-  const index = submissions.findIndex(s => s.id === id);
-  if (index === -1) return null;
-  submissions[index] = { ...submissions[index], ...updates };
-  return submissions[index];
-}
-
-export function getSubmission(id) {
-  return submissions.find(s => s.id === id);
-}
-
-export function getSubmissionsByStudent(studentId) {
-  return submissions.filter(s => s.studentId === studentId);
-}
-
-export function getSubmissionsByAssignment(assignmentId) {
-  return submissions.filter(s => s.assignmentId === assignmentId);
-}
-
-export function getSubmissionsByTeacher(teacherId) {
-  return submissions.filter(s => s.teacherId === teacherId);
-}
+// ─── Public API ──────────────────────────────────────────────
 
 export function getAllSubmissions() {
-  return [...submissions];
+  return SUBMISSIONS.map(enrichSubmission);
 }
 
-export function getSubmissionStats() {
-  const total = submissions.length;
-  const byRAG = {
-    RED: submissions.filter(s => s.rag === 'RED').length,
-    AMBER: submissions.filter(s => s.rag === 'AMBER').length,
-    GREEN: submissions.filter(s => s.rag === 'GREEN').length
+export function getSubmissionById(id) {
+  const sub = SUBMISSIONS.find(s => s.id === id);
+  return sub ? enrichSubmission(sub) : null;
+}
+
+// Get submissions visible to a specific teacher (via teaching assignments or HoD)
+export function getSubmissionsByTeacher(teacherId) {
+  return SUBMISSIONS
+    .map(enrichSubmission)
+    .filter(sub => {
+      if (!sub.unit || !sub.cohort) return false;
+      return canTeacherSeeSubmission(teacherId, sub.unit.number, sub.cohort.id);
+    });
+}
+
+// Get submissions for a specific student
+export function getSubmissionsByStudent(studentId) {
+  return SUBMISSIONS.filter(s => s.studentId === studentId).map(enrichSubmission);
+}
+
+// Get triage counts from a list of submissions
+export function getTriageCounts(submissions) {
+  const complete = submissions.filter(s => s.status === 'complete');
+  return {
+    total: submissions.length,
+    red: complete.filter(s => s.priorityFlag === 'red').length,
+    yellow: complete.filter(s => s.priorityFlag === 'yellow').length,
+    green: complete.filter(s => s.priorityFlag === 'green').length,
+    pending: submissions.filter(s => s.status === 'pending' || s.status === 'processing').length,
+    reviewed: complete.filter(s => s.reviewed).length,
   };
-  const pending = submissions.filter(s => s.status === 'pending').length;
-  const complete = submissions.filter(s => s.status === 'complete').length;
-
-  return { total, byRAG, pending, complete };
 }
 
-// BTEC Sequential Grading Rules
-export function calculateBTECGrade(criteriaResults) {
-  // criteriaResults = { P1: true/false, P2: true/false, M1: true/false, D1: true/false, ... }
-  const pass = Object.entries(criteriaResults)
-    .filter(([k]) => k.startsWith('P'))
-    .every(([, v]) => v === true);
-
-  const merit = Object.entries(criteriaResults)
-    .filter(([k]) => k.startsWith('M'))
-    .every(([, v]) => v === true);
-
-  const distinction = Object.entries(criteriaResults)
-    .filter(([k]) => k.startsWith('D'))
-    .every(([, v]) => v === true);
-
-  if (!pass) return 'Fail';
-  if (pass && merit && distinction) return 'Distinction';
-  if (pass && merit) return 'Merit';
-  return 'Pass';
+// Get at-risk students from submissions
+export function getAtRiskStudents(submissions) {
+  const atRisk = new Map();
+  submissions.forEach(sub => {
+    if (sub.status !== 'complete') return;
+    const isAtRisk = (sub.originalityScore !== null && sub.originalityScore < 80) || sub.gradeEstimate === 'Fail';
+    if (isAtRisk && sub.student) {
+      if (!atRisk.has(sub.studentId)) {
+        atRisk.set(sub.studentId, { student: sub.student, cohort: sub.cohort, reasons: [] });
+      }
+      const entry = atRisk.get(sub.studentId);
+      if (sub.originalityScore < 80) entry.reasons.push(`Originality ${sub.originalityScore}% on ${sub.unitTitle}`);
+      if (sub.gradeEstimate === 'Fail') entry.reasons.push(`Fail on ${sub.unitTitle}`);
+    }
+  });
+  return Array.from(atRisk.values());
 }
 
-// At-risk detection
-export function isStudentAtRisk(studentId) {
-  const studentSubs = getSubmissionsByStudent(studentId);
-  return studentSubs.some(s =>
-    (s.originalityScore && s.originalityScore < 80) ||
-    s.estimatedGrade === 'Fail'
-  );
+// Mark a submission as reviewed
+export function markReviewed(submissionId) {
+  const sub = SUBMISSIONS.find(s => s.id === submissionId);
+  if (sub) sub.reviewed = true;
 }
 
-// Get students who haven't submitted for an assignment
-export function getMissingSubmissions(assignmentId, allStudentIds) {
-  const submitted = getSubmissionsByAssignment(assignmentId).map(s => s.studentId);
-  return allStudentIds.filter(id => !submitted.includes(id));
+// Add a new submission (from webhook or test upload)
+export function addSubmission(submission) {
+  SUBMISSIONS.push(submission);
+  return enrichSubmission(submission);
+}
+
+// Calculate BTEC grade from criteria results (sequential achievement)
+export function calculateGrade(criteriaResults, assignmentCriteria) {
+  if (!criteriaResults || !assignmentCriteria) return 'Unknown';
+  const pCriteria = assignmentCriteria.filter(c => c.startsWith('P'));
+  const mCriteria = assignmentCriteria.filter(c => c.startsWith('M'));
+  const dCriteria = assignmentCriteria.filter(c => c.startsWith('D'));
+  const allPMet = pCriteria.every(c => criteriaResults[c] === 'met');
+  const allMMet = mCriteria.every(c => criteriaResults[c] === 'met');
+  const allDMet = dCriteria.every(c => criteriaResults[c] === 'met');
+  if (!allPMet) return 'Fail';
+  if (!allMMet) return 'Pass';
+  if (!allDMet) return 'Merit';
+  return 'Distinction';
 }

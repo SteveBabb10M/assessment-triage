@@ -1,19 +1,17 @@
 {
   "name": "assessment-triage",
-  "version": "1.0.0",
-  "description": "AI-powered assessment triage for educators",
+  "version": "2.0.0",
+  "description": "AI-powered assessment triage for BTEC educators",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "next": "14.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@supabase/supabase-js": "^2.43.0",
     "mammoth": "^1.6.0",
     "date-fns": "^3.6.0"
   },

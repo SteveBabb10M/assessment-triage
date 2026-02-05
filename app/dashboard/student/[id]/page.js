@@ -2,119 +2,103 @@
 
 import { useParams } from 'next/navigation';
 import { getSubmissionsByStudent } from '../../../../data/submissions';
-import { getStudentById, cohort } from '../../../../data/demo';
-import { units, getAllAssignments } from '../../../../data/units';
+import { getStudentById, getCohortById, getCohortShortName } from '../../../../data/staff';
 
 export default function StudentProfile() {
   const params = useParams();
-  const studentId = params.id;
-
-  const student = getStudentById(studentId);
-  const submissions = getSubmissionsByStudent(studentId);
-  const allAssignments = getAllAssignments().filter(a => a.unitType === 'coursework');
+  const student = getStudentById(params.id);
 
   if (!student) {
     return (
       <div className="container" style={{ paddingTop: '2rem' }}>
-        <div className="card">
-          <p>Student not found</p>
-          <a href="/dashboard" className="btn btn-primary" style={{ marginTop: '1rem' }}>Back to Dashboard</a>
-        </div>
+        <div className="card"><p>Student not found</p><a href="/dashboard" className="btn btn-primary mt-4">Back to Dashboard</a></div>
       </div>
     );
   }
 
-  const isAtRisk = submissions.some(s => s.rag === 'RED');
+  const cohort = getCohortById(student.cohortId);
+  const submissions = getSubmissionsByStudent(student.id);
+  const hasAtRisk = submissions.some(s => s.status === 'complete' && ((s.originalityScore != null && s.originalityScore < 80) || s.gradeEstimate === 'Fail'));
 
   return (
-    <div className="container" style={{ maxWidth: '900px' }}>
+    <div className="container" style={{ paddingTop: '1rem', paddingBottom: '2rem', maxWidth: '900px' }}>
       <a href="/dashboard" style={{ color: '#64748b', fontSize: '0.875rem' }}>← Back to Dashboard</a>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 className="page-title">{student.displayName}</h1>
-          <p className="page-subtitle">{cohort.name} • {cohort.programme}</p>
+      {/* Student header */}
+      <div style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>{student.name}</h1>
+          {hasAtRisk && <span className="badge badge-red">⚠️ At Risk</span>}
         </div>
-        {isAtRisk && <span className="badge badge-red" style={{ fontSize: '0.9rem', padding: '0.4rem 1rem' }}>⚠️ At Risk</span>}
+        <p style={{ color: '#64748b' }}>{getCohortShortName(student.cohortId)}</p>
       </div>
 
       {/* Summary stats */}
-      <div className="stats-row">
+      <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
         <div className="stat-card">
           <div className="stat-number">{submissions.length}</div>
           <div className="stat-label">Submissions</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number rag-red">{submissions.filter(s => s.rag === 'RED').length}</div>
-          <div className="stat-label">🔴 Flagged</div>
+          <div className="stat-number" style={{ color: 'var(--color-red)' }}>
+            {submissions.filter(s => s.priorityFlag === 'red').length}
+          </div>
+          <div className="stat-label">🔴 Review</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number rag-green">{submissions.filter(s => s.rag === 'GREEN').length}</div>
+          <div className="stat-number" style={{ color: 'var(--color-yellow)' }}>
+            {submissions.filter(s => s.priorityFlag === 'yellow').length}
+          </div>
+          <div className="stat-label">🟡 Check</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-number" style={{ color: 'var(--color-green)' }}>
+            {submissions.filter(s => s.priorityFlag === 'green').length}
+          </div>
           <div className="stat-label">🟢 On Track</div>
         </div>
       </div>
 
-      {/* Submissions */}
+      {/* Submissions table */}
       <div className="card">
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>Submissions</h2>
-        {submissions.length === 0 ? (
-          <p style={{ color: '#64748b' }}>No submissions yet</p>
+        <h3 style={{ marginBottom: '1rem' }}>Submission History</h3>
+        {submissions.length > 0 ? (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr><th>Unit / Assignment</th><th>Status</th><th>Originality</th><th>Grade Est.</th><th>Submitted</th><th></th></tr>
+              </thead>
+              <tbody>
+                {submissions.map(sub => (
+                  <tr key={sub.id} className="clickable" onClick={() => window.location.href = `/dashboard/submission/${sub.id}`}>
+                    <td>
+                      <div style={{ fontWeight: 500 }}>{sub.unitTitle}</div>
+                      <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>{sub.assignmentName}</div>
+                    </td>
+                    <td>
+                      <span className={`badge badge-${sub.priorityFlag || 'gray'}`}>
+                        {{ red: '🔴 Review', yellow: '🟡 Check', green: '🟢 On Track' }[sub.priorityFlag] || '⏳ Pending'}
+                      </span>
+                    </td>
+                    <td>{sub.originalityScore != null ? `${sub.originalityScore}%` : '—'}</td>
+                    <td><span className={`grade-${sub.gradeEstimate?.toLowerCase()}`}>{sub.gradeEstimate || '—'}</span></td>
+                    <td style={{ fontSize: '0.8125rem', color: '#64748b' }}>{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                    <td><span className="btn btn-sm">View →</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
-          submissions.map(sub => (
-            <div key={sub.id} className="submission-row">
-              <div className="submission-info">
-                <div className="submission-name">{sub.analysis?.assignmentTitle || sub.assignmentId}</div>
-                <div className="submission-meta">
-                  {sub.submittedAt && new Date(sub.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  {sub.originalityScore !== undefined && ` • Originality: ${sub.originalityScore}%`}
-                  {sub.estimatedGrade && ` • Grade: ${sub.estimatedGrade}`}
-                </div>
-              </div>
-              <div className="submission-actions">
-                <span className={`badge badge-${sub.rag === 'RED' ? 'red' : sub.rag === 'AMBER' ? 'amber' : sub.rag === 'GREEN' ? 'green' : 'gray'}`}>
-                  {sub.rag || sub.status}
-                </span>
-                <a href={`/dashboard/submission/${sub.id}`} className="btn btn-sm btn-primary">View Report</a>
-              </div>
-            </div>
-          ))
+          <div className="empty-state">
+            <div className="empty-state-icon">📭</div>
+            <p>No submissions yet for this student</p>
+          </div>
         )}
       </div>
 
-      {/* Assignment Progress */}
-      <div className="card">
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>Assignment Progress</h2>
-        {Object.values(units).filter(u => u.type === 'coursework').map(unit => (
-          <div key={unit.id} style={{ marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Unit {unit.number}: {unit.title}
-            </h3>
-            {Object.values(unit.assignments).map(assignment => {
-              const sub = submissions.find(s => s.assignmentId === assignment.id);
-              const dueDate = assignment.handIn ? new Date(assignment.handIn) : null;
-              const isOverdue = dueDate && dueDate < new Date() && !sub;
-              return (
-                <div key={assignment.id} className="calendar-row" style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
-                  <span>{assignment.title || `Assignment ${assignment.learningAim}`}</span>
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    {dueDate ? dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}
-                  </span>
-                  <span>
-                    {sub ? (
-                      <span className={`badge badge-${sub.rag === 'RED' ? 'red' : sub.rag === 'AMBER' ? 'amber' : 'green'}`}>
-                        {sub.estimatedGrade || sub.status}
-                      </span>
-                    ) : isOverdue ? (
-                      <span className="badge badge-red">Not Submitted</span>
-                    ) : (
-                      <span className="badge badge-gray">Pending</span>
-                    )}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+        <a href="/dashboard" className="btn btn-primary">Back to Dashboard</a>
       </div>
     </div>
   );

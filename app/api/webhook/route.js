@@ -1,114 +1,81 @@
-// API endpoint: /api/webhook
-// Receives submissions from Power Automate when students submit via Teams Forms
-
 import { NextResponse } from 'next/server';
-import { analyzeSubmission, extractTextFromDocx } from '../../../lib/analysis.js';
-import { addSubmission, updateSubmission, classifyRAG } from '../../../data/submissions.js';
-import { getStudentByName } from '../../../data/demo.js';
+import { analyzeSubmission } from '../../../lib/analysis';
+import { addSubmission } from '../../../data/submissions';
+import { getStudentById, STUDENTS } from '../../../data/staff';
+import { getAssignmentById } from '../../../data/units';
 
 export async function POST(request) {
   try {
     const body = await request.json();
+    const { studentId, studentName, assignmentId, fileName, fileContent, fileUrl } = body;
 
-    // Validate required fields
-    const { studentName, studentEmail, assignmentId, fileName, fileContent } = body;
-
-    if (!studentName || !assignmentId || !fileContent) {
-      return NextResponse.json(
-        { error: 'Missing required fields: studentName, assignmentId, fileContent' },
-        { status: 400 }
-      );
+    // Resolve student — by ID or by name lookup
+    let student = studentId ? getStudentById(studentId) : null;
+    if (!student && studentName) {
+      student = STUDENTS.find(s => s.name.toLowerCase() === studentName.toLowerCase());
     }
+    if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 
-    // Look up student
-    const student = getStudentByName(studentName);
-    const studentId = student ? student.id : studentName.toLowerCase().replace(/\s+/g, '-');
+    const assignment = getAssignmentById(assignmentId);
+    if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
 
-    // Create submission record
-    const submission = addSubmission({
-      studentId,
-      studentName: student ? student.displayName : studentName,
-      studentEmail: studentEmail || '',
-      assignmentId,
-      fileName: fileName || 'submission.docx',
-      status: 'analysing'
-    });
+    // If we have file content (base64), decode and process
+    if (fileContent) {
+      const mammoth = require('mammoth');
+      const buffer = Buffer.from(fileContent, 'base64');
+      const result = await mammoth.extractRawText({ buffer });
+      const text = result.value;
 
-    // Extract text from document
-    let text;
-    try {
-      text = await extractTextFromDocx(fileContent);
-    } catch (extractError) {
-      updateSubmission(submission.id, {
-        status: 'error',
-        error: 'Could not extract text from document'
-      });
-      return NextResponse.json(
-        { error: 'Could not extract text from document', submissionId: submission.id },
-        { status: 422 }
-      );
-    }
+      if (!text || text.trim().length < 50) {
+        return NextResponse.json({ error: 'Document appears empty or too short' }, { status: 400 });
+      }
 
-    // Run analysis
-    try {
-      const analysis = await analyzeSubmission({
-        text,
+      const analysis = await analyzeSubmission(text, student.name, assignmentId);
+      const submissionId = `sub-${Date.now()}`;
+      const submission = {
+        id: submissionId,
+        studentId: student.id,
         assignmentId,
-        studentName: student ? student.displayName : studentName
-      });
-
-      // Update submission with results
-      updateSubmission(submission.id, {
+        fileName: fileName || 'submission.docx',
+        submittedAt: new Date().toISOString(),
         status: 'complete',
-        originalityScore: analysis.originalityScore,
-        estimatedGrade: analysis.estimatedGrade,
-        rag: analysis.rag,
-        analysis,
-        wordCount: analysis.wordCount
-      });
+        reviewed: false,
+        ...analysis,
+      };
 
-      // Return summary for Teams notification
+      addSubmission(submission);
+
       return NextResponse.json({
         success: true,
-        submissionId: submission.id,
-        summary: {
-          student: student ? student.displayName : studentName,
-          assignment: analysis.assignmentTitle,
-          unit: `Unit ${analysis.unitNumber}: ${analysis.unitTitle}`,
-          rag: analysis.rag,
-          originalityScore: analysis.originalityScore,
-          estimatedGrade: analysis.estimatedGrade,
-          flagCount: analysis.originalityFlags ? analysis.originalityFlags.length : 0,
-          overallSummary: analysis.overallSummary,
-          reportUrl: `/dashboard/submission/${submission.id}`
-        }
+        submissionId,
+        studentName: student.name,
+        assignmentId,
+        fileName,
+        priorityFlag: analysis.priorityFlag,
+        message: 'Submission received and analyzed',
       });
-
-    } catch (analysisError) {
-      updateSubmission(submission.id, {
-        status: 'error',
-        error: analysisError.message
-      });
-      return NextResponse.json(
-        { error: 'Analysis failed', details: analysisError.message, submissionId: submission.id },
-        { status: 500 }
-      );
     }
 
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Invalid request', details: error.message },
-      { status: 400 }
-    );
+    // If only URL, note for later processing
+    return NextResponse.json({
+      success: true,
+      pending: true,
+      studentId: student.id,
+      assignmentId,
+      fileName,
+      fileUrl,
+      message: 'Submission received. File URL noted for processing.',
+    });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    return NextResponse.json({ error: err.message || 'Webhook processing failed' }, { status: 500 });
   }
 }
 
-// GET endpoint for health check
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    service: 'Assessment Triage Webhook',
-    cohort: 'Y2-BS1',
-    timestamp: new Date().toISOString()
+    endpoint: 'Assessment Triage Webhook',
+    usage: 'POST with studentId, assignmentId, and fileContent (base64)',
   });
 }

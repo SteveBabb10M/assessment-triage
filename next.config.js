@@ -1,6 +1,3 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Stable configuration for production
-};
-
+const nextConfig = {};
 module.exports = nextConfig;

@@ -1,80 +1,69 @@
-// API endpoint: /api/analyze
-// For manual upload testing via the Setup page
-
 import { NextResponse } from 'next/server';
-import { analyzeSubmission, extractTextFromDocx } from '../../../lib/analysis.js';
-import { addSubmission, updateSubmission } from '../../../data/submissions.js';
+import { analyzeSubmission } from '../../../lib/analysis';
+import { addSubmission } from '../../../data/submissions';
+import { getStudentById } from '../../../data/staff';
+import { getAssignmentById } from '../../../data/units';
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
     const studentId = formData.get('studentId');
-    const studentName = formData.get('studentName');
     const assignmentId = formData.get('assignmentId');
 
     if (!file || !studentId || !assignmentId) {
-      return NextResponse.json(
-        { error: 'Missing required fields: file, studentId, assignmentId' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Create submission record
-    const submission = addSubmission({
-      studentId,
-      studentName: studentName || studentId,
-      assignmentId,
-      fileName: file.name,
-      status: 'analysing'
-    });
+    const student = getStudentById(studentId);
+    const assignment = getAssignmentById(assignmentId);
+    if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+    if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
 
-    // Read file content
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const base64 = buffer.toString('base64');
-
-    // Extract text
-    let text;
+    // Extract text from docx
+    let text = '';
     try {
-      text = await extractTextFromDocx(base64);
-    } catch (extractError) {
-      updateSubmission(submission.id, {
-        status: 'error',
-        error: 'Could not extract text from document'
-      });
-      return NextResponse.json(
-        { error: 'Could not extract text from document', submissionId: submission.id },
-        { status: 422 }
-      );
+      const mammoth = require('mammoth');
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const result = await mammoth.extractRawText({ buffer });
+      text = result.value;
+    } catch (err) {
+      return NextResponse.json({ error: 'Failed to read document: ' + err.message }, { status: 400 });
+    }
+
+    if (!text || text.trim().length < 50) {
+      return NextResponse.json({ error: 'Document appears empty or too short' }, { status: 400 });
     }
 
     // Run analysis
-    const analysis = await analyzeSubmission({
-      text,
-      assignmentId,
-      studentName: studentName || studentId
-    });
+    const analysis = await analyzeSubmission(text, student.name, assignmentId);
 
-    // Update submission
-    updateSubmission(submission.id, {
+    // Create submission record
+    const submissionId = `sub-${Date.now()}`;
+    const submission = {
+      id: submissionId,
+      studentId,
+      assignmentId,
+      fileName: file.name,
+      submittedAt: new Date().toISOString(),
       status: 'complete',
-      originalityScore: analysis.originalityScore,
-      estimatedGrade: analysis.estimatedGrade,
-      rag: analysis.rag,
-      analysis,
-      wordCount: analysis.wordCount
-    });
+      reviewed: false,
+      ...analysis,
+    };
+
+    addSubmission(submission);
 
     return NextResponse.json({
       success: true,
-      submissionId: submission.id,
-      analysis
+      submissionId,
+      student: student.name,
+      assignment: `Unit ${assignment.unitNumber}: ${assignment.unitTitle} — ${assignment.name}`,
+      priorityFlag: analysis.priorityFlag,
+      originalityScore: analysis.originalityScore,
+      gradeEstimate: analysis.gradeEstimate,
     });
-
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Analysis failed', details: error.message },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error('Analysis error:', err);
+    return NextResponse.json({ error: err.message || 'Analysis failed' }, { status: 500 });
   }
 }
