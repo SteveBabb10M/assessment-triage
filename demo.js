@@ -6,7 +6,7 @@ export const cohort = {
   name: 'Y2-BS1',
   programme: 'BTEC Level 3 Extended Diploma Business',
   academicYear: '2025-26',
-  teamName: 'Y2-BS1 Extended Diploma Business' // Microsoft Teams team name
+  teamName: 'GW - Business L3 National Ext Dip Y2 - BS1' // Microsoft Teams team name
 };
 
 // Teaching staff for this cohort
