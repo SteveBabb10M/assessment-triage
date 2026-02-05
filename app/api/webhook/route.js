@@ -1,123 +1,114 @@
-import { NextResponse } from 'next/server';
-import { analyzeSubmission } from '../../../lib/analysis';
-import { getAssignmentById } from '../../../data/units';
+// API endpoint: /api/webhook
+// Receives submissions from Power Automate when students submit via Teams Forms
 
-// This endpoint receives submissions from Power Automate
+import { NextResponse } from 'next/server';
+import { analyzeSubmission, extractTextFromDocx } from '../../../lib/analysis.js';
+import { addSubmission, updateSubmission, classifyRAG } from '../../../data/submissions.js';
+import { getStudentByName } from '../../../data/demo.js';
+
 export async function POST(request) {
   try {
     const body = await request.json();
-    
-    // Expected payload from Power Automate:
-    // {
-    //   studentName: "Student 1",
-    //   studentId: "student1",  
-    //   assignmentId: "unit1-ab",
-    //   fileName: "submission.docx",
-    //   fileContent: "<base64 encoded file content>",
-    //   fileUrl: "https://sharepoint.com/..." (optional, for reference)
-    // }
 
-    const { studentName, studentId, assignmentId, fileName, fileContent, fileUrl } = body;
+    // Validate required fields
+    const { studentName, studentEmail, assignmentId, fileName, fileContent } = body;
 
-    if (!fileContent && !fileUrl) {
-      return NextResponse.json({ 
-        error: 'No file content provided' 
-      }, { status: 400 });
+    if (!studentName || !assignmentId || !fileContent) {
+      return NextResponse.json(
+        { error: 'Missing required fields: studentName, assignmentId, fileContent' },
+        { status: 400 }
+      );
     }
 
-    if (!studentId || !assignmentId) {
-      return NextResponse.json({ 
-        error: 'Missing studentId or assignmentId' 
-      }, { status: 400 });
-    }
+    // Look up student
+    const student = getStudentByName(studentName);
+    const studentId = student ? student.id : studentName.toLowerCase().replace(/\s+/g, '-');
 
-    let extractedText = '';
-
-    // If base64 content provided, decode and extract text
-    if (fileContent) {
-      try {
-        // Decode base64
-        const buffer = Buffer.from(fileContent, 'base64');
-        
-        // For .docx files, we'd need mammoth on the server side
-        // For now, assume text or simple extraction
-        // In production, you'd use mammoth or similar
-        
-        // Simple check if it's a docx (starts with PK)
-        if (buffer[0] === 0x50 && buffer[1] === 0x4B) {
-          // It's a zip/docx file - would need mammoth
-          // For POC, return error asking for text extraction on client
-          return NextResponse.json({
-            error: 'Server-side .docx extraction not implemented in POC. Use the Setup > Test Upload page instead.',
-            suggestion: 'Extract text client-side and call /api/analyze directly'
-          }, { status: 400 });
-        } else {
-          // Assume it's plain text
-          extractedText = buffer.toString('utf-8');
-        }
-      } catch (err) {
-        return NextResponse.json({ 
-          error: 'Failed to decode file content: ' + err.message 
-        }, { status: 400 });
-      }
-    }
-
-    // Get assignment info
-    const assignment = getAssignmentById(assignmentId);
-    if (!assignment) {
-      return NextResponse.json({ 
-        error: 'Assignment not found: ' + assignmentId 
-      }, { status: 400 });
-    }
-
-    // If we have text, analyze it
-    if (extractedText) {
-      const result = await analyzeSubmission(extractedText, assignment, {
-        course: assignment.course === 'extended' ? 'Extended Diploma' : 'Foundation Diploma',
-        ability: 'mid'
-      });
-
-      // In production, you'd:
-      // 1. Save to database
-      // 2. Send Teams notification
-      // 3. Return success
-
-      return NextResponse.json({
-        success: true,
-        studentId,
-        studentName,
-        assignmentId,
-        fileName,
-        analysis: result,
-        message: 'Submission received and analyzed'
-      });
-    }
-
-    // If we only have a URL, we'd need to fetch from SharePoint
-    // This requires Microsoft Graph API authentication
-    return NextResponse.json({
-      success: true,
-      pending: true,
+    // Create submission record
+    const submission = addSubmission({
       studentId,
+      studentName: student ? student.displayName : studentName,
+      studentEmail: studentEmail || '',
       assignmentId,
-      fileName,
-      fileUrl,
-      message: 'Submission received. File URL noted for processing.'
+      fileName: fileName || 'submission.docx',
+      status: 'analysing'
     });
 
+    // Extract text from document
+    let text;
+    try {
+      text = await extractTextFromDocx(fileContent);
+    } catch (extractError) {
+      updateSubmission(submission.id, {
+        status: 'error',
+        error: 'Could not extract text from document'
+      });
+      return NextResponse.json(
+        { error: 'Could not extract text from document', submissionId: submission.id },
+        { status: 422 }
+      );
+    }
+
+    // Run analysis
+    try {
+      const analysis = await analyzeSubmission({
+        text,
+        assignmentId,
+        studentName: student ? student.displayName : studentName
+      });
+
+      // Update submission with results
+      updateSubmission(submission.id, {
+        status: 'complete',
+        originalityScore: analysis.originalityScore,
+        estimatedGrade: analysis.estimatedGrade,
+        rag: analysis.rag,
+        analysis,
+        wordCount: analysis.wordCount
+      });
+
+      // Return summary for Teams notification
+      return NextResponse.json({
+        success: true,
+        submissionId: submission.id,
+        summary: {
+          student: student ? student.displayName : studentName,
+          assignment: analysis.assignmentTitle,
+          unit: `Unit ${analysis.unitNumber}: ${analysis.unitTitle}`,
+          rag: analysis.rag,
+          originalityScore: analysis.originalityScore,
+          estimatedGrade: analysis.estimatedGrade,
+          flagCount: analysis.originalityFlags ? analysis.originalityFlags.length : 0,
+          overallSummary: analysis.overallSummary,
+          reportUrl: `/dashboard/submission/${submission.id}`
+        }
+      });
+
+    } catch (analysisError) {
+      updateSubmission(submission.id, {
+        status: 'error',
+        error: analysisError.message
+      });
+      return NextResponse.json(
+        { error: 'Analysis failed', details: analysisError.message, submissionId: submission.id },
+        { status: 500 }
+      );
+    }
+
   } catch (error) {
-    console.error('Webhook error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Webhook processing failed' 
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Invalid request', details: error.message },
+      { status: 400 }
+    );
   }
 }
 
-// Handle GET for health check
+// GET endpoint for health check
 export async function GET() {
-  return NextResponse.json({ 
+  return NextResponse.json({
     status: 'ok',
-    endpoint: 'Assessment Triage Webhook',
-    usage: 'POST with studentId, assignmentId, and fileContent (base64)'
+    service: 'Assessment Triage Webhook',
+    cohort: 'Y2-BS1',
+    timestamp: new Date().toISOString()
   });
 }
