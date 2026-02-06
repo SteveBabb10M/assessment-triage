@@ -7,7 +7,7 @@ import { getAssignmentById, getUnitByNumber } from './units';
 // ─── Sample Submissions ──────────────────────────────────────
 // Mix of RAG statuses across different cohorts/units for demo
 let SUBMISSIONS = [
-  // RED — High concern: AI content detected
+  // RED — High concern: AI content detected (DETAILED ANALYSIS FORMAT)
   {
     id: 'sub-001',
     studentId: 'bs1-04',  // Bharat: Prayas
@@ -15,27 +15,127 @@ let SUBMISSIONS = [
     fileName: 'Unit8_AssignmentA_Prayas.docx',
     submittedAt: '2025-10-03T14:34:00Z',
     status: 'complete',
-    originalityScore: 58,
+    originalityScore: 38,
     originalityVerdict: 'High concern',
     likelyAITool: 'ChatGPT',
+    likelyAIToolReasoning: 'Based on stylistic markers: the "all things considered" signature phrase, balanced pros/cons structure, tendency toward business jargon, and three-paragraph assessment formula are characteristic of ChatGPT (GPT-3.5 or GPT-4) rather than Claude or other tools.',
     confidenceLevel: 'High',
     gradeEstimate: 'Pass',
     priorityFlag: 'red',
     criteriaResults: { P1: 'met', P2: 'met', M1: 'partial', D1: 'not_met' },
-    flags: [
-      { type: 'ai_content', severity: 'high', message: 'AI-generated content detected in M1 assessment sections' },
-      { type: 'vocabulary', severity: 'high', message: 'Vocabulary significantly above expected BTEC L3 standard: "synergistic recruitment paradigm"' },
-      { type: 'structure', severity: 'medium', message: 'Unnaturally uniform paragraph structure throughout' },
-    ],
-    authenticElements: [
-      'Spelling error "recrutment" suggests some human input',
-      'Reference to local employer "Highcross Leicester" is specific and appropriate',
-    ],
-    summary: 'Significant originality concerns. Pass criteria met but Merit analysis appears AI-generated. Recommend discussion with student.',
-    recommendations: ['Conduct viva voce to verify understanding', 'Ask student to explain key concepts in own words', 'Check against previous submission style'],
-    questionsForStudent: ['Can you explain what you mean by "synergistic recruitment paradigm"?', 'Talk me through how you researched the recruitment process at your chosen business.'],
-    wordCount: 3842,
+    wordCount: 4832,
     reviewed: false,
+
+    // ─── Section-by-Section Analysis ───
+    sectionAnalysis: [
+      {
+        section: 'Introduction and Template Sections',
+        quality: 'Basic, formulaic',
+        likelySource: 'Teacher template',
+        notes: 'The opening paragraph and contents page structure appear to be teacher-provided scaffolding or copied from assignment brief. This is normal and expected.',
+      },
+      {
+        section: 'Basic Business Information',
+        quality: 'Mixed, some errors',
+        likelySource: 'Partly student',
+        notes: 'Mixed authenticity. Contains misspelling "Defenition", inconsistent date formatting (11/09/2025 vs 11.09.2025). These errors suggest some human input, but surrounding sophisticated analysis is incongruous.',
+      },
+      {
+        section: 'Stakeholder Definitions',
+        quality: 'Textbook-like',
+        likelySource: 'AI or copied notes',
+        notes: 'Definitions are technically accurate but written in a style that suggests direct copying from AI output or textbook sources.',
+      },
+      {
+        section: 'Assessment Sections (M1 Criterion)',
+        quality: 'Highly sophisticated',
+        likelySource: 'AI-generated (likely ChatGPT)',
+        notes: 'MAJOR CONCERN. Every stakeholder assessment follows identical three-part pattern: description of methods, analysis of effectiveness, summary of relationship. This mechanical uniformity is characteristic of AI tools.',
+      },
+      {
+        section: 'References',
+        quality: 'Minimal, inconsistent',
+        likelySource: 'Student (inadequate)',
+        notes: 'Despite listing some URLs, the analysis doesn\'t draw specific data from them beyond surface-level facts.',
+      },
+    ],
+
+    // ─── AI Phrase Detection ───
+    aiPhraseAnalysis: [
+      { phrase: 'All things considered', occurrences: 5, significance: 'Classic ChatGPT closing phrase' },
+      { phrase: 'Nevertheless', occurrences: 4, significance: 'Favoured AI transitional word' },
+      { phrase: 'Taking everything into consideration', occurrences: 2, significance: 'AI summary phrase' },
+      { phrase: 'multi-channel approach/strategy', occurrences: 5, significance: 'Business jargon AI defaults to' },
+      { phrase: 'mission-driven', occurrences: 3, significance: 'Generic AI vocabulary' },
+      { phrase: 'Despite these challenges/drawbacks', occurrences: 3, significance: 'AI balance phrase' },
+    ],
+
+    // ─── Vocabulary Inconsistencies ───
+    vocabularyFlags: [
+      {
+        quote: '"Apple has an ownership structure that allows it to have long-term strategic orientation and financial stability by having institutional investors such as Vanguard and BlackRock as its dominant owners"',
+        concern: 'Phrase "long-term strategic orientation" is far beyond expected BTEC L3 vocabulary',
+      },
+      {
+        quote: '"The compartmentalised structure allows protecting innovation and reducing leaks"',
+        concern: 'Term "compartmentalised structure" unlikely to be in student\'s natural vocabulary',
+      },
+      {
+        quote: '"The dynamic may also lead to tension between the shareholder interest and more general stakeholder interests"',
+        concern: 'Sophisticated academic phrasing inconsistent with expected level',
+      },
+    ],
+
+    // ─── Copy-Paste Errors ───
+    copyPasteErrors: [
+      {
+        text: '"Qatar Telecom exhibits a commitment to transparency and growth through regular updates..."',
+        location: 'LOROS staff section',
+        significance: 'This sentence appears in the LOROS section and makes no contextual sense. "Qatar Telecom" is clearly a remnant from another AI generation or different assignment. This is compelling evidence of copy-pasting AI-generated content without careful review.',
+      },
+    ],
+
+    // ─── Additional Concerns ───
+    additionalConcerns: [
+      'No genuine engagement with sources: Despite listing URLs, the analysis doesn\'t draw specific data from them beyond surface-level facts.',
+      'Generic analysis: The stakeholder assessments could apply to almost any large company or charity—they don\'t show specific research.',
+      'Perfect grammar in extended sections: A student would typically show more grammatical inconsistencies in longer pieces.',
+      'Image references: The document references images/charts but the analysis around them is AI-generic.',
+    ],
+
+    // ─── Authentic Elements ───
+    authenticElements: [
+      'Misspelling "Defenition" suggests some human input',
+      'Inconsistent date formatting (11/09/2025 vs 11.09.2025) is a human error pattern',
+      'Reference to local employer shows some genuine engagement',
+      'Factually incorrect claim about LOROS being "Primary sector" (actually tertiary/voluntary) suggests limited understanding but genuine attempt',
+    ],
+
+    // ─── Summary Metrics ───
+    summaryMetrics: {
+      overallOriginality: 'Low (estimated 30-40% original student work)',
+      aiContentLikelihood: 'High (particularly M1 sections)',
+      probableAITool: 'ChatGPT',
+      studentUnderstanding: 'Limited evidence',
+      academicIntegrityConcern: 'Yes — significant',
+    },
+
+    summary: 'The document appears to combine some genuine (though error-prone) student work with substantial AI-generated content, particularly in the extended assessment sections that carry the M1 marks.',
+
+    // ─── Recommendations ───
+    recommendations: [
+      'Conversation with student: Ask them to explain specific claims (e.g., "What do you mean by \'compartmentalised structure\'?" or "Why did you mention Qatar Telecom?")',
+      'Check writing samples: Compare against known authentic work from this student',
+      'Turnitin/AI detection: Run through institutional AI detection tools for additional confirmation',
+      'Assessment adjustment: If AI use is confirmed, consider whether the student understands the underlying concepts or simply submitted AI output',
+    ],
+
+    questionsForStudent: [
+      'What do you mean by "compartmentalised structure"?',
+      'Can you explain why you mentioned Qatar Telecom in the LOROS section?',
+      'Talk me through how you researched the stakeholder relationships for Apple.',
+      'What sources did you use for the M1 analysis?',
+    ],
   },
   // RED — Fail grade
   {
