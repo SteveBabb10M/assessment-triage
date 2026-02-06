@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllSubmissions, getSubmissionsByTeacher, getTriageCounts, getAtRiskStudents, markReviewed } from '../../data/submissions';
+import { getAllSubmissions, getSubmissionsByTeacher, getTriageCounts, getAtRiskStudents, markReviewed, getUnmatchedSubmissions } from '../../data/submissions';
 import { TEACHERS, COHORTS, getCohortsByTeacher, getCohortShortName } from '../../data/staff';
 import { UNITS } from '../../data/units';
 
@@ -57,6 +57,7 @@ export default function Dashboard() {
   const yellowSubs = filtered.filter(s => s.priorityFlag === 'yellow' && s.status === 'complete');
   const greenSubs = filtered.filter(s => s.priorityFlag === 'green' && s.status === 'complete');
   const pendingSubs = filtered.filter(s => s.status === 'pending' || s.status === 'processing');
+  const unmatchedSubs = (viewMode === 'department' || currentTeacher.isHoD) ? getUnmatchedSubmissions() : [];
 
   return (
     <div className="container" style={{ paddingTop: '1rem', paddingBottom: '2rem' }}>
@@ -150,14 +151,22 @@ export default function Dashboard() {
                         <td>{sub.cohortName}</td>
                         <td>
                           <div style={{ fontWeight: 500 }}>{sub.unitTitle}</div>
-                          <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>{sub.assignmentName}</div>
+                          <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+                            {sub.isAdHoc && <span style={{ background: '#fef3c7', color: '#92400e', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.6875rem', marginRight: '0.375rem' }}>Ad hoc</span>}
+                            {sub.assignmentName}
+                          </div>
                         </td>
                         <td>
                           <span className={`badge badge-${sub.originalityScore >= 90 ? 'green' : sub.originalityScore >= 80 ? 'yellow' : 'red'}`}>
                             {sub.originalityScore}%
                           </span>
                         </td>
-                        <td><span className={`grade-${sub.gradeEstimate?.toLowerCase()}`}>{sub.gradeEstimate}</span></td>
+                        <td>
+                          {sub.isAdHoc 
+                            ? <span style={{ color: '#64748b', fontSize: '0.8125rem' }}>N/A</span>
+                            : <span className={`grade-${sub.gradeEstimate?.toLowerCase()}`}>{sub.gradeEstimate}</span>
+                          }
+                        </td>
                         <td>{sub.coTeachers?.length > 1 && <span className="co-teach-badge">👥 Co-taught</span>}</td>
                         <td><span className="btn btn-sm">View →</span></td>
                       </tr>
@@ -186,6 +195,36 @@ export default function Dashboard() {
                     <td>{sub.cohortName}</td>
                     <td>{sub.unitTitle} — {sub.assignmentName}</td>
                     <td style={{ color: '#64748b', fontSize: '0.8125rem' }}>{new Date(sub.submittedAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Unmatched Submissions — HoD only */}
+      {unmatchedSubs.length > 0 && (
+        <div className="card" style={{ borderLeft: '4px solid #f97316', background: '#fff7ed' }}>
+          <h3 style={{ color: '#c2410c' }}>⚠️ Unmatched Submissions ({unmatchedSubs.length})</h3>
+          <p style={{ fontSize: '0.8125rem', color: '#9a3412', marginBottom: '0.75rem' }}>
+            These submissions couldn't be automatically matched. Manual assignment required.
+          </p>
+          <div className="table-wrapper">
+            <table>
+              <thead><tr><th>Student Name</th><th>Assignment Title</th><th>Issue</th><th>Received</th><th></th></tr></thead>
+              <tbody>
+                {unmatchedSubs.map(u => (
+                  <tr key={u.id}>
+                    <td style={{ fontWeight: 500 }}>{u.studentName}</td>
+                    <td>{u.assignmentTitle}</td>
+                    <td>
+                      <span className="badge badge-yellow" style={{ fontSize: '0.6875rem' }}>
+                        {u.type === 'unknown_student' ? 'Unknown Student' : 'Unknown Assignment'}
+                      </span>
+                    </td>
+                    <td style={{ color: '#64748b', fontSize: '0.8125rem' }}>{new Date(u.receivedAt).toLocaleDateString()}</td>
+                    <td><a href={`/setup?resolve=${u.id}`} className="btn btn-sm">Resolve →</a></td>
                   </tr>
                 ))}
               </tbody>

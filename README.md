@@ -2,6 +2,18 @@
 
 AI-powered assessment triage system for BTEC Business educators. Automatically analyses student submissions for originality concerns and criteria achievement, helping teachers prioritise their marking.
 
+## How It Works
+
+1. **Students submit** assignments in Microsoft Teams as normal
+2. **Power Automate** detects the submission and sends it to this system
+3. **AI analysis** generates a detailed originality report with section-by-section breakdown
+4. **Teachers open the dashboard** to see which submissions need attention first (🔴🟡🟢)
+5. **Marking happens in Teams** as normal — this system just prioritises the pile
+
+**Zero change** to teacher or student workflow. The triage layer is invisible.
+
+---
+
 ## Real Data (February 2026)
 
 | | Count |
@@ -17,6 +29,36 @@ Unit 19 (BS1) and Unit 14 (BS2) are co-taught by David Urquhart and Simon Brown.
 
 ---
 
+## Assignment Naming Convention
+
+For automatic matching from Teams, assignment titles should include a unit number:
+
+| Title contains | Result |
+|----------------|--------|
+| Unit # + Assignment letter | ✓ Full analysis with criteria assessment |
+| Unit # only | ✓ Ad hoc — originality analysis only, no criteria |
+| No Unit # | ✗ Unmatched queue, requires resubmission or manual fix |
+
+**Examples:**
+
+| Works ✓ | Type |
+|---------|------|
+| `Unit 4 Assignment A` | Full analysis |
+| `U4 Ass A` | Full analysis |
+| `Unit 4a` | Full analysis |
+| `Unit 8 Revision Task` | Ad hoc (originality only) |
+| `Unit 22 Draft` | Ad hoc (originality only) |
+
+| Doesn't work ✗ | Why |
+|----------------|-----|
+| `Planning an Event` | No unit number |
+| `Assignment A` | No unit number |
+| `Task 1` | No unit number |
+
+The parser is **case insensitive** and handles common abbreviations. Ad hoc submissions get the full originality report (section analysis, AI phrase detection, vocabulary flags, etc.) but no criteria assessment since there's no marking guide.
+
+---
+
 ## Deploy to Vercel
 
 1. Push this code to GitHub
@@ -25,14 +67,18 @@ Unit 19 (BS1) and Unit 14 (BS2) are co-taught by David Urquhart and Simon Brown.
    - `ANTHROPIC_API_KEY` = your API key from [console.anthropic.com](https://console.anthropic.com)
 4. Click Deploy
 
-## Test It
+## Connect Teams Assignments
+
+See **[docs/TEAMS_INTEGRATION.md](docs/TEAMS_INTEGRATION.md)** for the full Power Automate setup guide.
+
+## Test Manually
 
 1. Open your deployed URL
 2. Go to **Setup > Test Upload**
 3. Select a cohort, student, and assignment
 4. Upload a student .docx file
 5. Click **Analyse Submission**
-6. View the report
+6. View the detailed report
 
 ## Teacher Views
 

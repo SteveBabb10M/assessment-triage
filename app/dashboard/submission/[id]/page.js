@@ -41,6 +41,13 @@ export default function SubmissionReport() {
         </div>
       )}
 
+      {/* Ad hoc notice */}
+      {sub.isAdHoc && (
+        <div style={{ background: '#fef3c7', border: '1px solid #fde047', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          <strong>📝 Ad hoc submission:</strong> "{sub.adHocTitle || sub.teamsAssignmentTitle}" — Originality analysis only. No marking guide available for criteria assessment.
+        </div>
+      )}
+
       {/* Summary Metrics Table */}
       {sub.summaryMetrics ? (
         <div className="card" style={{ marginBottom: '1rem' }}>
@@ -247,8 +254,8 @@ export default function SubmissionReport() {
         </div>
       )}
 
-      {/* Criteria Results */}
-      {sub.criteriaResults && Object.keys(sub.criteriaResults).length > 0 && (
+      {/* Criteria Results — only for standard submissions */}
+      {!sub.isAdHoc && sub.criteriaResults && Object.keys(sub.criteriaResults).length > 0 && (
         <div className="card report-section">
           <h3>📋 Criteria Assessment — {sub.assignmentName}</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>

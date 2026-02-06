@@ -73,7 +73,10 @@ export default function StudentProfile() {
                   <tr key={sub.id} className="clickable" onClick={() => window.location.href = `/dashboard/submission/${sub.id}`}>
                     <td>
                       <div style={{ fontWeight: 500 }}>{sub.unitTitle}</div>
-                      <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>{sub.assignmentName}</div>
+                      <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+                        {sub.isAdHoc && <span style={{ background: '#fef3c7', color: '#92400e', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.6875rem', marginRight: '0.375rem' }}>Ad hoc</span>}
+                        {sub.assignmentName}
+                      </div>
                     </td>
                     <td>
                       <span className={`badge badge-${sub.priorityFlag || 'gray'}`}>
