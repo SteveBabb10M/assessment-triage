@@ -307,7 +307,7 @@ let SUBMISSIONS = [
   // YELLOW — Pass grade (Steve's Unit 22 BF3)
   {
     id: 'sub-004',
-    studentId: 'bf3-09',  // Moataz: Rayan
+    studentId: 'bs3-09',  // Moataz: Rayan
     assignmentId: 'unit22-a',
     fileName: 'Unit22_AssA_Rayan.docx',
     submittedAt: '2026-01-25T10:10:00Z',
@@ -334,7 +334,7 @@ let SUBMISSIONS = [
   // GREEN — Merit (Steve's Unit 22 BF3)
   {
     id: 'sub-010',
-    studentId: 'bf3-16',  // Rakesh: Neel
+    studentId: 'bs3-16',  // Rakesh: Neel
     assignmentId: 'unit22-a',
     fileName: 'Unit22_AssA_Neel.docx',
     submittedAt: '2026-01-25T14:30:00Z',
@@ -362,7 +362,7 @@ let SUBMISSIONS = [
   // RED — AI content in Unit 22 BF3 (DETAILED FORMAT — good for Foundation demo)
   {
     id: 'sub-017',
-    studentId: 'bf3-06',  // Joni: Santiago
+    studentId: 'bs3-06',  // Joni: Santiago
     assignmentId: 'unit22-a',
     fileName: 'Unit22_AssA_Santiago.docx',
     submittedAt: '2026-01-26T09:20:00Z',
@@ -565,7 +565,7 @@ let SUBMISSIONS = [
   // RED — AI content in Unit 1 BF3 (DETAILED FORMAT — Amreen)
   {
     id: 'sub-013',
-    studentId: 'bf3-03',  // Demco: Sebastian
+    studentId: 'bs3-03',  // Demco: Sebastian
     assignmentId: 'unit1-ab',
     fileName: 'Unit1_AB_Sebastian.docx',
     submittedAt: '2025-10-19T10:30:00Z',
