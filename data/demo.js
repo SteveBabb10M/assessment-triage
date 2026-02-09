@@ -1,130 +1,203 @@
-// Real student and teacher data for Y2-BS1 Extended Diploma Business
-// Cohort: 2025-26 Year 2
+// Real department data — populated from Assessment_Triage_Data_Template.xlsx
+// v2.1 — February 2026
+// Change log: BF3 renamed to BS3 to match Teams team naming
 
-export const cohort = {
-  id: 'y2-bs1',
-  name: 'Y2-BS1',
-  programme: 'BTEC Level 3 Extended Diploma Business',
-  academicYear: '2025-26',
-  teamName: 'GW - Business L3 National Ext Dip Y2 - BS1' // Microsoft Teams team name
-};
-
-// Teaching staff for this cohort
-export const teachers = {
-  'sbr': {
-    id: 'sbr',
-    initials: 'SBR',
-    name: 'Steve Babb',
-    email: '', // To be configured
-    role: 'Teacher Three',
-    isHoD: false,
-    units: ['unit6', 'unit8', 'unit14'],
-    teachingBlocks: {
-      block1: { unit: 'unit6', title: 'Principles of Management', type: 'exam' },
-      block2: { unit: 'unit8', title: 'Recruitment and Selection', type: 'coursework' },
-      block3: { unit: 'unit14', title: 'Investigating Customer Service (shared)', type: 'coursework' }
-    }
-  },
-  'teacher-one': {
-    id: 'teacher-one',
-    initials: 'AMS/CPE/YAR',
-    name: 'Teacher One',
-    email: '',
-    role: 'Teacher One',
-    isHoD: false,
-    units: ['unit5', 'unit17', 'unit14'],
-    teachingBlocks: {
-      block1: { unit: 'unit5', title: 'International Business', type: 'coursework' },
-      block2: { unit: 'unit17', title: 'Digital Marketing', type: 'coursework' },
-      block3: { unit: 'unit14', title: 'Investigating Customer Service (shared)', type: 'coursework' }
-    }
-  },
-  'teacher-two': {
-    id: 'teacher-two',
-    initials: 'DUR/SBR/JSH',
-    name: 'Teacher Two',
-    email: '',
-    role: 'Teacher Two',
-    isHoD: false,
-    units: ['unit7', 'unit19', 'unit14'],
-    teachingBlocks: {
-      block1: { unit: 'unit7', title: 'Business Decision Making', type: 'exam' },
-      block2: { unit: 'unit19', title: 'Pitching for a New Business', type: 'coursework' },
-      block3: { unit: 'unit14', title: 'Investigating Customer Service (shared)', type: 'coursework' }
-    }
-  },
-  // IV staff
-  'cpe': {
-    id: 'cpe',
-    name: 'Catherine Pennington',
-    role: 'Lead Internal Verifier',
-    isLIV: true
-  },
-  'tab': {
-    id: 'tab',
-    name: 'Tina Ababio',
-    role: 'Assessor / IV',
-    units: ['unit8']
-  },
-  'asd': {
-    id: 'asd',
-    name: 'Ashar Saeed',
-    role: 'Assessor',
-    units: ['unit8']
-  }
-};
-
-// Y2-BS1 Student roster - 22 students
-export const students = [
-  { id: 'alli-h', surname: 'Alli', firstName: 'Hassan', displayName: 'Hassan Alli' },
-  { id: 'ashrif-m', surname: 'Ashrif', firstName: 'Maliha', displayName: 'Maliha Ashrif' },
-  { id: 'bechachria-m', surname: 'Bechachria', firstName: 'Mohamed', displayName: 'Mohamed Bechachria' },
-  { id: 'bharat-p', surname: 'Bharat', firstName: 'Prayas', displayName: 'Prayas Bharat' },
-  { id: 'bharatkumar-m', surname: 'Bharatkumar', firstName: 'Mahek', displayName: 'Mahek Bharatkumar' },
-  { id: 'urquhart-d', surname: 'Urquhart', firstName: 'David', displayName: 'David Urquhart' },
-  { id: 'dsilva-s', surname: 'DSilva', firstName: 'Sofia Lourenco', displayName: 'Sofia Lourenco DSilva' },
-  { id: 'haidari-h', surname: 'Haidari', firstName: 'Hussain', displayName: 'Hussain Haidari' },
-  { id: 'hussain-y', surname: 'Hussain', firstName: 'Yaqeen', displayName: 'Yaqeen Hussain' },
-  { id: 'itesh-a', surname: 'Itesh', firstName: 'Aksh', displayName: 'Aksh Itesh' },
-  { id: 'jenti-r', surname: 'Jenti', firstName: 'Rusik', displayName: 'Rusik Jenti' },
-  { id: 'mahmood-mi', surname: 'Mahmood', firstName: 'Muhammad Imaad', displayName: 'Muhammad Imaad Mahmood' },
-  { id: 'noormohamed-a', surname: 'Noormohamed', firstName: 'Anwar', displayName: 'Anwar Noormohamed' },
-  { id: 'padda-t', surname: 'Padda', firstName: 'Tarndeep', displayName: 'Tarndeep Padda' },
-  { id: 'patel-d', surname: 'Patel', firstName: 'Dhvani', displayName: 'Dhvani Patel' },
-  { id: 'patel-n', surname: 'Patel', firstName: 'Neel', displayName: 'Neel Patel' },
-  { id: 'rashid-q', surname: 'Rashid', firstName: 'Qays', displayName: 'Qays Rashid' },
-  { id: 'sankhla-r', surname: 'Sankhla', firstName: 'Raksha', displayName: 'Raksha Sankhla' },
-  { id: 'shaban-d', surname: 'Shaban', firstName: 'Didar', displayName: 'Didar Shaban' },
-  { id: 'sharma-s', surname: 'Sharma', firstName: 'Sumit', displayName: 'Sumit Sharma' },
-  { id: 'sokolov-v', surname: 'Sokolov', firstName: 'Vasil', displayName: 'Vasil Sokolov' },
-  { id: 'tandel-p', surname: 'Tandel', firstName: 'Param', displayName: 'Param Tandel' }
+// ─── Teachers ────────────────────────────────────────────────
+export const TEACHERS = [
+  { id: 'sbo', name: 'Simon Brown', initials: 'SBO', isHoD: true },
+  { id: 'ams', name: 'Amreen Shabir', initials: 'AMS', isHoD: false },
+  { id: 'asd', name: 'Ashar Saeed', initials: 'ASD', isHoD: false },
+  { id: 'cla', name: 'Caroline Lawford', initials: 'CLA', isHoD: false },
+  { id: 'dau', name: 'David Urquhart', initials: 'DAU', isHoD: false },
+  { id: 'jas', name: 'James Shaw', initials: 'JAS', isHoD: false },
+  { id: 'sba', name: 'Steve Babb', initials: 'SBA', isHoD: false },
+  { id: 'cpe', name: 'Catherine Pennington', initials: 'CPE', isHoD: false },
 ];
 
-// Helper functions
+// ─── Cohorts ─────────────────────────────────────────────────
+export const COHORTS = [
+  { id: 'bs1', name: 'BS1', qualification: 'BTEC L3 National Extended Diploma', course: 'extended', year: 'Y2',
+    teamsName: 'GW - Business L3 National Ext Dip Y2 - BS1' },
+  { id: 'bs2', name: 'BS2', qualification: 'BTEC L3 National Extended Diploma', course: 'extended', year: 'Y2',
+    teamsName: 'GW - Business L3 National Ext Dip Y2 - BS2' },
+  { id: 'bs3', name: 'BS3', qualification: 'BTEC L3 National Foundation Diploma', course: 'foundation', year: 'Y1',
+    teamsName: 'GW - Business L3 National Found Dip Y1 - BS3' },
+  { id: 'bf4', name: 'BF4', qualification: 'BTEC L3 National Foundation Diploma', course: 'foundation', year: 'Y1',
+    teamsName: 'GW - Business L3 National Found Dip Y1 - BF4' },
+];
+
+// ─── Teaching Assignments ────────────────────────────────────
+// Maps teacher → unit → cohort (supports co-teaching)
+export const TEACHING_ASSIGNMENTS = [
+  // Extended Diploma — Y2
+  { teacherId: 'sba', unitNumber: 8, cohortId: 'bs1' },
+  { teacherId: 'sba', unitNumber: 8, cohortId: 'bs2' },
+  { teacherId: 'ams', unitNumber: 5, cohortId: 'bs1' },
+  { teacherId: 'cla', unitNumber: 5, cohortId: 'bs2' },
+  { teacherId: 'ams', unitNumber: 17, cohortId: 'bs1' },
+  { teacherId: 'cla', unitNumber: 17, cohortId: 'bs2' },
+  // Co-taught: David + Simon both teach Unit 19 to BS1 and Unit 14 to BS2
+  { teacherId: 'dau', unitNumber: 19, cohortId: 'bs1' },
+  { teacherId: 'sbo', unitNumber: 19, cohortId: 'bs1' },
+  { teacherId: 'dau', unitNumber: 14, cohortId: 'bs2' },
+  { teacherId: 'sbo', unitNumber: 14, cohortId: 'bs2' },
+  // Foundation Diploma — Y1
+  { teacherId: 'ams', unitNumber: 1, cohortId: 'bs3' },
+  { teacherId: 'cla', unitNumber: 1, cohortId: 'bf4' },
+  { teacherId: 'sba', unitNumber: 22, cohortId: 'bs3' },
+  { teacherId: 'sba', unitNumber: 22, cohortId: 'bf4' },
+];
+
+// ─── Students ────────────────────────────────────────────────
+export const STUDENTS = [
+  // BS1 — Y2 Extended Diploma (22 students)
+  { id: 'bs1-01', name: 'Alli: Hassan', cohortId: 'bs1' },
+  { id: 'bs1-02', name: 'Ashrif: Maliha', cohortId: 'bs1' },
+  { id: 'bs1-03', name: 'Bechachria: Mohamed', cohortId: 'bs1' },
+  { id: 'bs1-04', name: 'Bharat: Prayas', cohortId: 'bs1' },
+  { id: 'bs1-05', name: 'Bharatkumar: Mahek', cohortId: 'bs1' },
+  { id: 'bs1-06', name: 'David Urquhart', cohortId: 'bs1' },
+  { id: 'bs1-07', name: 'DSilva: Sofia Lourenco', cohortId: 'bs1' },
+  { id: 'bs1-08', name: 'Haidari: Hussain', cohortId: 'bs1' },
+  { id: 'bs1-09', name: 'Hussain: Yaqeen', cohortId: 'bs1' },
+  { id: 'bs1-10', name: 'Itesh: Aksh', cohortId: 'bs1' },
+  { id: 'bs1-11', name: 'Jenti: Rusik', cohortId: 'bs1' },
+  { id: 'bs1-12', name: 'Mahmood: Muhammad Imaad', cohortId: 'bs1' },
+  { id: 'bs1-13', name: 'Noormohamed: Anwar', cohortId: 'bs1' },
+  { id: 'bs1-14', name: 'Padda: Tarndeep', cohortId: 'bs1' },
+  { id: 'bs1-15', name: 'Patel: Dhvani', cohortId: 'bs1' },
+  { id: 'bs1-16', name: 'Patel: Neel', cohortId: 'bs1' },
+  { id: 'bs1-17', name: 'Rashid: Qays', cohortId: 'bs1' },
+  { id: 'bs1-18', name: 'Sankhla: Raksha', cohortId: 'bs1' },
+  { id: 'bs1-19', name: 'Shaban: Didar', cohortId: 'bs1' },
+  { id: 'bs1-20', name: 'Sharma: Sumit', cohortId: 'bs1' },
+  { id: 'bs1-21', name: 'Sokolov: Vasil', cohortId: 'bs1' },
+  { id: 'bs1-22', name: 'Tandel: Param', cohortId: 'bs1' },
+
+  // BS2 — Y2 Extended Diploma (18 students)
+  { id: 'bs2-01', name: 'Awan: Nail', cohortId: 'bs2' },
+  { id: 'bs2-02', name: 'Da Cruz: Maisa', cohortId: 'bs2' },
+  { id: 'bs2-03', name: 'Jagdish: Neelkanth', cohortId: 'bs2' },
+  { id: 'bs2-04', name: 'Jagdish: Neev', cohortId: 'bs2' },
+  { id: 'bs2-05', name: 'Kanti: Meghakxi', cohortId: 'bs2' },
+  { id: 'bs2-06', name: 'Kasu: Alisha', cohortId: 'bs2' },
+  { id: 'bs2-07', name: 'Kaur: Esha', cohortId: 'bs2' },
+  { id: 'bs2-08', name: 'Khan: Rehan', cohortId: 'bs2' },
+  { id: 'bs2-09', name: 'Maisuria: Dhruv', cohortId: 'bs2' },
+  { id: 'bs2-10', name: 'Mwembamba: Suleiman', cohortId: 'bs2' },
+  { id: 'bs2-11', name: 'Patel: Eesaa', cohortId: 'bs2' },
+  { id: 'bs2-12', name: 'Patel: Mahima Jiteshkumar', cohortId: 'bs2' },
+  { id: 'bs2-13', name: 'Perkuszewska: Victoria', cohortId: 'bs2' },
+  { id: 'bs2-14', name: 'Rahman: Gm Asafur', cohortId: 'bs2' },
+  { id: 'bs2-15', name: 'Rahsid Dawood: Saif', cohortId: 'bs2' },
+  { id: 'bs2-16', name: 'Ram: Vishal', cohortId: 'bs2' },
+  { id: 'bs2-17', name: 'Rezaei: Maisam', cohortId: 'bs2' },
+  { id: 'bs2-18', name: 'Shantilal: Dipen', cohortId: 'bs2' },
+
+  // BS3 — Y1 Foundation Diploma (21 students) [formerly BF3]
+  { id: 'bs3-01', name: 'Abdi: Muzamil', cohortId: 'bs3' },
+  { id: 'bs3-02', name: 'Billa: Lovejit', cohortId: 'bs3' },
+  { id: 'bs3-03', name: 'Demco: Sebastian', cohortId: 'bs3' },
+  { id: 'bs3-04', name: 'Gaffar: Hisham', cohortId: 'bs3' },
+  { id: 'bs3-05', name: 'Ibrahim: Zayd', cohortId: 'bs3' },
+  { id: 'bs3-06', name: 'Joni: Santiago', cohortId: 'bs3' },
+  { id: 'bs3-07', name: 'Mahmadsajid: Zaid', cohortId: 'bs3' },
+  { id: 'bs3-08', name: 'Mahomed: Naval', cohortId: 'bs3' },
+  { id: 'bs3-09', name: 'Moataz: Rayan', cohortId: 'bs3' },
+  { id: 'bs3-10', name: 'Mohamed: Kawsar', cohortId: 'bs3' },
+  { id: 'bs3-11', name: 'Mudukuti: Takunda', cohortId: 'bs3' },
+  { id: 'bs3-12', name: 'Mushapaidze: Golden', cohortId: 'bs3' },
+  { id: 'bs3-13', name: 'Omar: Abdisalam', cohortId: 'bs3' },
+  { id: 'bs3-14', name: 'Owan: Raphael', cohortId: 'bs3' },
+  { id: 'bs3-15', name: 'Pravinkumar: Aryan', cohortId: 'bs3' },
+  { id: 'bs3-16', name: 'Rakesh: Neel', cohortId: 'bs3' },
+  { id: 'bs3-17', name: 'Ravji: Himesh', cohortId: 'bs3' },
+  { id: 'bs3-18', name: 'Shantu: Nirmal', cohortId: 'bs3' },
+  { id: 'bs3-19', name: 'Sidik: Zayan', cohortId: 'bs3' },
+  { id: 'bs3-20', name: 'Thaarick Mohamed: Adam', cohortId: 'bs3' },
+  { id: 'bs3-21', name: 'Vinod: Siddhi', cohortId: 'bs3' },
+
+  // BF4 — Y1 Foundation Diploma (20 students)
+  { id: 'bf4-01', name: 'Ahmed: Ahmed', cohortId: 'bf4' },
+  { id: 'bf4-02', name: 'Allana: Aaishah', cohortId: 'bf4' },
+  { id: 'bf4-03', name: 'Amar: Kajal', cohortId: 'bf4' },
+  { id: 'bf4-04', name: 'Baria: Heli', cohortId: 'bf4' },
+  { id: 'bf4-05', name: 'Bawani: Erik', cohortId: 'bf4' },
+  { id: 'bf4-06', name: 'Contractor: Ameer', cohortId: 'bf4' },
+  { id: 'bf4-07', name: 'Devgi: Manav', cohortId: 'bf4' },
+  { id: 'bf4-08', name: 'Fryekh: Leyna', cohortId: 'bf4' },
+  { id: 'bf4-09', name: 'Gani: Ammarah', cohortId: 'bf4' },
+  { id: 'bf4-10', name: 'Hiteshkumar: Trushtika', cohortId: 'bf4' },
+  { id: 'bf4-11', name: 'Imtihaz: Sahil', cohortId: 'bf4' },
+  { id: 'bf4-12', name: 'Karelia: Ronak', cohortId: 'bf4' },
+  { id: 'bf4-13', name: 'Modhwadia: Pruthvi', cohortId: 'bf4' },
+  { id: 'bf4-14', name: 'Naresh: Jenish', cohortId: 'bf4' },
+  { id: 'bf4-15', name: 'Nerway: Aroz', cohortId: 'bf4' },
+  { id: 'bf4-16', name: 'Orchard: Krystal', cohortId: 'bf4' },
+  { id: 'bf4-17', name: 'Osman: Abdulqaliq', cohortId: 'bf4' },
+  { id: 'bf4-18', name: 'Patel: Keanne', cohortId: 'bf4' },
+  { id: 'bf4-19', name: 'Raj: Sonia', cohortId: 'bf4' },
+  { id: 'bf4-20', name: 'Selvaramesh: Kashmila', cohortId: 'bf4' },
+];
+
+// ─── Helper Functions ────────────────────────────────────────
+
+export function getTeacherById(id) {
+  return TEACHERS.find(t => t.id === id) || null;
+}
+
+export function getCohortById(id) {
+  return COHORTS.find(c => c.id === id) || null;
+}
+
+export function getCohortFullName(cohortId) {
+  const cohort = getCohortById(cohortId);
+  if (!cohort) return 'Unknown';
+  return `${cohort.year} ${cohort.qualification} — ${cohort.name}`;
+}
+
+export function getCohortShortName(cohortId) {
+  const cohort = getCohortById(cohortId);
+  if (!cohort) return 'Unknown';
+  const qual = cohort.course === 'extended' ? 'Ext Dip' : 'Found Dip';
+  return `${cohort.year} ${qual} ${cohort.name}`;
+}
+
+export function getStudentsByCohort(cohortId) {
+  return STUDENTS.filter(s => s.cohortId === cohortId);
+}
+
 export function getStudentById(id) {
-  return students.find(s => s.id === id);
+  return STUDENTS.find(s => s.id === id) || null;
 }
 
-export function getStudentByName(name) {
-  const lower = name.toLowerCase();
-  return students.find(s =>
-    s.displayName.toLowerCase().includes(lower) ||
-    s.surname.toLowerCase().includes(lower) ||
-    s.firstName.toLowerCase().includes(lower)
-  );
+export function getTeachersForUnit(unitNumber, cohortId) {
+  return TEACHING_ASSIGNMENTS
+    .filter(a => a.unitNumber === unitNumber && a.cohortId === cohortId)
+    .map(a => getTeacherById(a.teacherId))
+    .filter(Boolean);
 }
 
-export function getStudentDropdownOptions() {
-  return students
-    .sort((a, b) => a.surname.localeCompare(b.surname))
-    .map(s => ({
-      value: s.id,
-      label: `${s.surname}, ${s.firstName}`
-    }));
+export function getUnitsForTeacher(teacherId) {
+  return TEACHING_ASSIGNMENTS
+    .filter(a => a.teacherId === teacherId)
+    .map(a => ({ unitNumber: a.unitNumber, cohortId: a.cohortId }));
 }
 
-export function getTeachersByUnit(unitId) {
-  return Object.values(teachers).filter(t =>
-    t.units && t.units.includes(unitId)
-  );
+export function getCohortByTeamsName(teamsName) {
+  return COHORTS.find(c => c.teamsName === teamsName) || null;
+}
+
+// Parse student name in "Surname: FirstName" format
+export function parseStudentName(name) {
+  if (!name) return { surname: '', firstName: '', displayName: '' };
+  const parts = name.split(':').map(s => s.trim());
+  if (parts.length === 2) {
+    return { surname: parts[0], firstName: parts[1], displayName: `${parts[1]} ${parts[0]}` };
+  }
+  // Handle names without colon separator (e.g. "David Urquhart")
+  const words = name.trim().split(/\s+/);
+  const firstName = words.slice(0, -1).join(' ');
+  const surname = words[words.length - 1];
+  return { surname, firstName, displayName: name };
 }
