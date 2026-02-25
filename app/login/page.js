@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,7 +33,6 @@ export default function LoginPage() {
         return;
       }
       
-      // Redirect to original destination or dashboard
       router.push(redirect);
       router.refresh();
       
@@ -43,6 +42,107 @@ export default function LoginPage() {
     }
   }
   
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          color: '#dc2626',
+          padding: '0.75rem 1rem',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          fontSize: '0.875rem'
+        }}>
+          {error}
+        </div>
+      )}
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <label 
+          htmlFor="email" 
+          style={{ 
+            display: 'block', 
+            marginBottom: '0.5rem',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            color: '#374151'
+          }}
+        >
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          placeholder="you@gateway.ac.uk"
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            boxSizing: 'border-box'
+          }}
+        />
+      </div>
+      
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label 
+          htmlFor="password" 
+          style={{ 
+            display: 'block', 
+            marginBottom: '0.5rem',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            color: '#374151'
+          }}
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="current-password"
+          style={{
+            width: '100%',
+            padding: '0.75rem 1rem',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            boxSizing: 'border-box'
+          }}
+        />
+      </div>
+      
+      <button
+        type="submit"
+        disabled={loading}
+        style={{
+          width: '100%',
+          padding: '0.75rem 1rem',
+          backgroundColor: loading ? '#94a3b8' : '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '1rem',
+          fontWeight: 600,
+          cursor: loading ? 'not-allowed' : 'pointer'
+        }}
+      >
+        {loading ? 'Signing in...' : 'Sign in'}
+      </button>
+    </form>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
@@ -70,113 +170,9 @@ export default function LoginPage() {
           </p>
         </div>
         
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div style={{
-              backgroundColor: '#fef2f2',
-              border: '1px solid #fecaca',
-              color: '#dc2626',
-              padding: '0.75rem 1rem',
-              borderRadius: '8px',
-              marginBottom: '1rem',
-              fontSize: '0.875rem'
-            }}>
-              {error}
-            </div>
-          )}
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label 
-              htmlFor="email" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem',
-                fontWeight: 500,
-                fontSize: '0.875rem',
-                color: '#374151'
-              }}
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              placeholder="you@gateway.ac.uk"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                boxSizing: 'border-box',
-                outline: 'none',
-                transition: 'border-color 0.15s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
-              htmlFor="password" 
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem',
-                fontWeight: 500,
-                fontSize: '0.875rem',
-                color: '#374151'
-              }}
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                boxSizing: 'border-box',
-                outline: 'none',
-                transition: 'border-color 0.15s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-            />
-          </div>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem',
-              backgroundColor: loading ? '#94a3b8' : '#2563eb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.15s'
-            }}
-            onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#1d4ed8')}
-            onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#2563eb')}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>Loading...</div>}>
+          <LoginForm />
+        </Suspense>
         
         <p style={{ 
           marginTop: '2rem', 
