@@ -1,0 +1,22 @@
+{
+  "name": "assessment-triage",
+  "version": "2.0.0",
+  "description": "AI-powered assessment triage for BTEC educators",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "mammoth": "^1.6.0",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3"
+  }
+}
