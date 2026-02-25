@@ -60,7 +60,7 @@ function LoginForm() {
       
       <div style={{ marginBottom: '1rem' }}>
         <label 
-          htmlFor="email" 
+          htmlFor="username" 
           style={{ 
             display: 'block', 
             marginBottom: '0.5rem',
@@ -69,16 +69,16 @@ function LoginForm() {
             color: '#374151'
           }}
         >
-          Email
+          Username
         </label>
         <input
-          id="email"
-          type="email"
+          id="username"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          autoComplete="email"
-          placeholder="you@gateway.ac.uk"
+          autoComplete="username"
+          placeholder="your username"
           style={{
             width: '100%',
             padding: '0.75rem 1rem',
