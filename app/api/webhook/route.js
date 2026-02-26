@@ -228,11 +228,14 @@ export async function POST(request) {
       }
 
       // Run analysis — ad hoc gets originality-only, standard gets full analysis
+      // No uploader name from webhook — falls back to cohort teacher for resources
       const analysis = await analyzeSubmission(
         text, 
         student.name, 
         isAdHoc ? null : resolvedAssignmentId,
-        isAdHoc ? adHocUnitNumber : null
+        isAdHoc ? adHocUnitNumber : null,
+        null,
+        student.cohortId
       );
       
       const submissionId = `sub-${Date.now()}`;

@@ -49,8 +49,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Document appears empty or too short' }, { status: 400 });
     }
 
-    // Run analysis
-    const analysis = await analyzeSubmission(text, student.name, assignmentId);
+    // Run analysis — pass uploader name and student cohort for resource lookup
+    const analysis = await analyzeSubmission(text, student.name, assignmentId, null, user.name, student.cohortId);
 
     // Create submission record with uploader info
     const submissionId = `sub-${Date.now()}`;

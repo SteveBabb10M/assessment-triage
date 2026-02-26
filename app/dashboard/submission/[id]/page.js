@@ -356,8 +356,8 @@ export default function SubmissionReport() {
         </div>
       )}
 
-      {/* Teacher recommendations */}
-      {sub.recommendations?.length > 0 && (
+      {/* Teacher recommendations — only for v1, v2 has these in Part B */}
+      {!isV2 && sub.recommendations?.length > 0 && (
         <div className="card" style={{ marginBottom: '1rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>📌 Recommended Actions</h3>
           <ol style={{ paddingLeft: '1.25rem', fontSize: '0.875rem' }}>
