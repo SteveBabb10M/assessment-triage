@@ -33,11 +33,22 @@ export default function SetupPage() {
     : [];
   const assignments = [...regularAssignments, ...adHocAssignment];
 
+  // Detect file type for display
+  const isPdf = file?.name?.toLowerCase().endsWith('.pdf');
+  const isDocx = file?.name?.toLowerCase().endsWith('.docx');
+
   async function handleSubmit() {
     if (!selectedStudent || !selectedAssignment || !file) {
       alert('Please select a student, assignment, and upload a file.');
       return;
     }
+
+    // Validate file type
+    if (!isPdf && !isDocx) {
+      alert('Please upload a .docx or .pdf file.');
+      return;
+    }
+
     setStatus('analyzing');
     setResult(null);
 
@@ -146,9 +157,31 @@ export default function SetupPage() {
 
           {/* File */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>Student Work (.docx)</label>
-            <input type="file" accept=".docx" onChange={e => setFile(e.target.files?.[0] || null)}
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>Student Work (.docx or .pdf)</label>
+            <input type="file" accept=".docx,.pdf" onChange={e => setFile(e.target.files?.[0] || null)}
               style={{ padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', width: '100%' }} />
+            {/* File type indicator */}
+            {file && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.125rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  backgroundColor: isPdf ? '#fef3c7' : '#dbeafe',
+                  color: isPdf ? '#92400e' : '#1e40af',
+                  border: `1px solid ${isPdf ? '#fde68a' : '#bfdbfe'}`,
+                }}>
+                  {isPdf ? 'PDF' : 'DOCX'}
+                </span>
+                <span style={{ color: '#64748b' }}>
+                  {isPdf
+                    ? 'Content analysis only — document forensics not available for PDF files'
+                    : 'Full analysis — document forensics + content analysis'}
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -170,6 +203,20 @@ export default function SetupPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '1.25rem' }}>✓</span>
               <strong style={{ color: '#166534' }}>Analysis complete!</strong>
+              {result.fileType === 'pdf' && (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.125rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.6875rem',
+                  fontWeight: 600,
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                }}>
+                  PDF — content analysis only
+                </span>
+              )}
             </div>
             <div style={{ fontSize: '0.875rem', color: '#166534', marginBottom: '0.75rem' }}>
               <p style={{ margin: '0.25rem 0' }}><strong>Student:</strong> {result.student}</p>
@@ -205,8 +252,9 @@ export default function SetupPage() {
       <div className="card" style={{ marginTop: '1.5rem', backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
         <h4 style={{ margin: '0 0 0.5rem 0', color: '#92400e' }}>💡 Tips</h4>
         <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.875rem', color: '#78350f' }}>
-          <li>Upload .docx files only (Word documents)</li>
-          <li>Analysis typically takes 10–30 seconds</li>
+          <li><strong>.docx files</strong> receive full analysis — document forensics (formatting metadata) + AI content analysis</li>
+          <li><strong>.pdf files</strong> receive content and visual analysis only — no document forensics are possible for PDFs</li>
+          <li>Analysis typically takes 10–30 seconds (PDFs may take slightly longer)</li>
           <li>Results are saved to your dashboard automatically</li>
           <li>Ad Hoc submissions run originality analysis only — no criteria marking</li>
           <li>The AI provides indicators only — always use professional judgment</li>
