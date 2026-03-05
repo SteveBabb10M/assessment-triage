@@ -1,6 +1,6 @@
 {
   "name": "assessment-triage",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "AI-powered assessment triage for BTEC educators",
   "private": true,
   "scripts": {
@@ -16,7 +16,8 @@
     "jszip": "^3.10.1",
     "xmldom": "^0.6.0",
     "date-fns": "^3.6.0",
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "eslint": "^8",
