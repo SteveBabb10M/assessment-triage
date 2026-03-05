@@ -183,6 +183,12 @@ function enrichSubmission(sub) {
   const unit = assignment ? getUnitByNumber(assignment.unitNumber) : null;
   const coTeachers = (unit && cohort) ? getTeachersForUnitCohort(unit.number, cohort.id) : [];
 
+  // Use assignment.unitTitle (resolved from the correct unit via unitId) rather than
+  // getUnitByNumber which can return the wrong unit when BTEC and T Level share number 1
+  const resolvedUnitTitle = assignment
+    ? `Unit ${assignment.unitNumber}: ${assignment.unitTitle}`
+    : (unit ? `Unit ${unit.number}: ${unit.title}` : 'Unknown');
+
   return {
     ...sub,
     student,
@@ -191,7 +197,7 @@ function enrichSubmission(sub) {
     unit,
     coTeachers,
     cohortName: cohort?.name || 'Unknown',
-    unitTitle: unit ? `Unit ${unit.number}: ${unit.title}` : 'Unknown',
+    unitTitle: resolvedUnitTitle,
     assignmentName: assignment?.name || 'Unknown',
   };
 }
