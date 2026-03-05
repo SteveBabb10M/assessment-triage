@@ -82,6 +82,9 @@ export default function SubmissionReport() {
   const aiLikelihood = triage.aiLikelihood || originality.confidence || '—';
   const probableTool = triage.probableTool || originality.tool || sub.likelyAITool || 'None detected';
 
+  // File type detection
+  const isPdfSubmission = forensics.fileType === 'pdf' || sub.fileType === 'pdf' || docIntegrity === 'Not applicable';
+
   // Verdict colour
   const verdictText = originality.verdict || originality.overallVerdict || '';
   const verdictColour = verdictText.includes('Largely Authentic') ? 'var(--color-green)' :
@@ -136,6 +139,20 @@ export default function SubmissionReport() {
             <p style={{ color: '#94a3b8', fontSize: '0.8125rem' }}>
               {(sub.wordCount || meta.wordCount).toLocaleString()} words
               {sub.submittedAt && <> &bull; Submitted {new Date(sub.submittedAt).toLocaleDateString('en-GB')}</>}
+              {isPdfSubmission && (
+                <span style={{
+                  display: 'inline-block',
+                  marginLeft: '0.5rem',
+                  padding: '0.125rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.6875rem',
+                  fontWeight: 600,
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                  verticalAlign: 'middle',
+                }}>PDF submission</span>
+              )}
             </p>
           )}
         </div>
@@ -168,10 +185,11 @@ export default function SubmissionReport() {
           <div style={{ fontSize: '0.6875rem', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Probable Tool</div>
           <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>{probableTool}</div>
         </div>
-        <div style={{ background: 'white', padding: '0.75rem', borderRadius: '8px', border: `1px solid ${docIntegrity === 'Consistent' ? '#86efac' : docIntegrity === 'Atypical' ? '#fca5a5' : '#e2e8f0'}` }}>
+        <div style={{ background: 'white', padding: '0.75rem', borderRadius: '8px', border: `1px solid ${docIntegrity === 'Consistent' ? '#86efac' : docIntegrity === 'Atypical' ? '#fca5a5' : isPdfSubmission ? '#cbd5e1' : '#e2e8f0'}` }}>
           <div style={{ fontSize: '0.6875rem', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Document Integrity</div>
           <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: docIntegrity === 'Consistent' ? 'var(--color-green)' : docIntegrity === 'Atypical' ? 'var(--color-red)' : docIntegrity === 'Some concerns' ? '#92400e' : '#64748b' }}>
             {docIntegrity || 'Not assessed'}
+            {isPdfSubmission && <span style={{ fontSize: '0.6875rem', fontWeight: 400, marginLeft: '0.25rem' }}>(PDF)</span>}
           </div>
         </div>
       </div>
@@ -286,6 +304,24 @@ export default function SubmissionReport() {
           if (!context) return (
             <div style={{ fontSize: '0.8125rem', color: '#475569', background: 'white', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
               <strong>🔬 Document Integrity:</strong> Not assessed — no .docx file available for forensic analysis.
+            </div>
+          );
+          if (isPdfSubmission) return (
+            <div style={{ fontSize: '0.8125rem', color: '#475569', background: '#f8fafc', padding: '0.875rem', borderRadius: '8px', border: '1px solid #cbd5e1', borderLeft: '4px solid #94a3b8' }}>
+              <strong style={{ color: '#64748b' }}>🔬 Document Integrity: Not applicable</strong>
+              <span style={{
+                display: 'inline-block',
+                marginLeft: '0.5rem',
+                padding: '0.125rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.6875rem',
+                fontWeight: 600,
+                backgroundColor: '#fef3c7',
+                color: '#92400e',
+                border: '1px solid #fde68a',
+                verticalAlign: 'middle',
+              }}>PDF</span>
+              <p style={{ margin: '0.5rem 0 0 0', lineHeight: '1.6' }}>{context}</p>
             </div>
           );
           const borderColour = integrity === 'Atypical' ? '#ef4444' : integrity === 'Some concerns' ? '#f59e0b' : '#22c55e';
