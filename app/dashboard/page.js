@@ -217,7 +217,16 @@ export default function Dashboard() {
                         <td>
                           {sub.isAdHoc 
                             ? <span style={{ color: '#64748b', fontSize: '0.8125rem' }}>N/A</span>
-                            : <span className={`grade-${sub.gradeEstimate?.toLowerCase()}`}>{sub.gradeEstimate}</span>
+                            : (() => {
+                                const grade = sub.gradeEstimate || '';
+                                const isBandGrade = grade.startsWith('Band');
+                                if (isBandGrade) {
+                                  // T Level band-based grade — show with teal colouring
+                                  const shortGrade = grade.replace(/\s*\(.*\)/, ''); // "Band 2-3"
+                                  return <span style={{ color: '#0d9488', fontWeight: 600, fontSize: '0.8125rem' }}>{shortGrade}</span>;
+                                }
+                                return <span className={`grade-${grade.toLowerCase()}`}>{grade}</span>;
+                              })()
                           }
                         </td>
                         {isSysadmin && (
