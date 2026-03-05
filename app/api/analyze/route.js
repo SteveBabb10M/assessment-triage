@@ -36,32 +36,74 @@ export async function POST(request) {
     if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const fileName = file.name || '';
+    const isPdf = fileName.toLowerCase().endsWith('.pdf');
+    const isDocx = fileName.toLowerCase().endsWith('.docx');
 
-    // Extract document forensics (font/formatting metadata)
+    if (!isPdf && !isDocx) {
+      return NextResponse.json({ error: 'Unsupported file type. Please upload a .docx or .pdf file.' }, { status: 400 });
+    }
+
     let forensicsData = null;
-    try {
-      forensicsData = await extractDocForensics(buffer);
-      console.log(`[Forensics] ${file.name}: risk=${forensicsData.summary?.riskLevel}, flags=${forensicsData.forensicFlags?.length || 0}`);
-    } catch (err) {
-      console.warn('[Forensics] Extraction failed, continuing without:', err.message);
-    }
-
-    // Extract text from docx
     let text = '';
-    try {
-      const mammoth = require('mammoth');
-      const result = await mammoth.extractRawText({ buffer });
-      text = result.value;
-    } catch (err) {
-      return NextResponse.json({ error: 'Failed to read document: ' + err.message }, { status: 400 });
+    let pdfBase64 = null;
+
+    if (isDocx) {
+      // ── DOCX path: full forensics + text extraction ──
+      try {
+        forensicsData = await extractDocForensics(buffer);
+        console.log(`[Forensics] ${fileName}: risk=${forensicsData.summary?.riskLevel}, flags=${forensicsData.forensicFlags?.length || 0}`);
+      } catch (err) {
+        console.warn('[Forensics] Extraction failed, continuing without:', err.message);
+      }
+
+      try {
+        const mammoth = require('mammoth');
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value;
+      } catch (err) {
+        return NextResponse.json({ error: 'Failed to read document: ' + err.message }, { status: 400 });
+      }
+
+      if (!text || text.trim().length < 50) {
+        return NextResponse.json({ error: 'Document appears empty or too short' }, { status: 400 });
+      }
+
+    } else {
+      // ── PDF path: no forensics, send PDF directly to Claude ──
+      // Convert buffer to base64 for the Claude API document input
+      pdfBase64 = buffer.toString('base64');
+
+      // Basic validation: check file isn't empty or too small
+      if (buffer.length < 500) {
+        return NextResponse.json({ error: 'PDF appears empty or corrupted' }, { status: 400 });
+      }
+
+      // Attempt basic text extraction for word count and local analysis fallback
+      // This is best-effort — the primary analysis uses the visual PDF via Claude
+      try {
+        const pdfParse = require('pdf-parse');
+        const pdfData = await pdfParse(buffer);
+        text = pdfData.text || '';
+        console.log(`[PDF] ${fileName}: extracted ${text.split(/\s+/).length} words for local analysis`);
+      } catch (err) {
+        console.warn('[PDF] Text extraction failed — Claude will work from visual PDF only:', err.message);
+        text = ''; // Local analysis will be minimal, but Claude still sees the full PDF
+      }
     }
 
-    if (!text || text.trim().length < 50) {
-      return NextResponse.json({ error: 'Document appears empty or too short' }, { status: 400 });
-    }
-
-    // Run analysis — pass uploader name, student cohort, and forensics data
-    const analysis = await analyzeSubmission(text, student.name, assignmentId, null, user.name, student.cohortId, forensicsData);
+    // Run analysis — pass file type and PDF base64 when applicable
+    const analysis = await analyzeSubmission(
+      text,
+      student.name,
+      assignmentId,
+      null,               // adHocUnitNumber
+      user.name,          // uploaderName
+      student.cohortId,   // studentCohortId
+      forensicsData,      // null for PDF
+      isPdf ? 'pdf' : 'docx',  // fileType
+      pdfBase64           // null for docx
+    );
 
     // Create submission record with uploader info
     const submissionId = `sub-${Date.now()}`;
@@ -69,7 +111,8 @@ export async function POST(request) {
       id: submissionId,
       studentId,
       assignmentId,
-      fileName: file.name,
+      fileName,
+      fileType: isPdf ? 'pdf' : 'docx',
       submittedAt: new Date().toISOString(),
       status: 'complete',
       reviewed: false,
@@ -87,7 +130,8 @@ export async function POST(request) {
       priorityFlag: analysis.priorityFlag,
       originalityScore: analysis.originalityScore,
       gradeEstimate: analysis.gradeEstimate,
-      forensicRisk: forensicsData?.summary?.riskLevel || 'unavailable',
+      forensicRisk: isPdf ? 'not_applicable' : (forensicsData?.summary?.riskLevel || 'unavailable'),
+      fileType: isPdf ? 'pdf' : 'docx',
       uploadedBy: user.email
     });
   } catch (err) {
