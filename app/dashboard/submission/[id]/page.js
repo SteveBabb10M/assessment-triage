@@ -98,6 +98,12 @@ export default function SubmissionReport() {
     if (g.includes('merit')) return '#f59e0b';
     if (g.includes('pass')) return '#22c55e';
     if (g.includes('referral') || g.includes('fail')) return '#ef4444';
+    // T Level band grades
+    if (g.includes('band 3-4') || g.includes('strong')) return '#7c3aed';
+    if (g.includes('band 2-3') || g.includes('competent')) return '#f59e0b';
+    if (g.includes('band 1-2') || g.includes('developing')) return '#f97316';
+    if (g.includes('band 1') || g.includes('limited')) return '#ef4444';
+    if (g.includes('below band')) return '#dc2626';
     return '#64748b';
   };
 
@@ -373,8 +379,64 @@ export default function SubmissionReport() {
             </div>
           )}
 
-          {/* Criteria table */}
+          {/* Criteria table / Grid assessments */}
           {(() => {
+            // T Level: render grid assessments
+            const gridAssessments = criteria?.gridAssessments || sub.holisticAssessment?.gridAssessments || [];
+            if (gridAssessments.length > 0) {
+              const totalMark = criteria?.totalEstimatedMark ?? sub.holisticAssessment?.totalEstimatedMark ?? '?';
+              const maxMarks = criteria?.maxMarks ?? sub.holisticAssessment?.maxMarks ?? '?';
+              return (
+                <div className="card" style={{ marginBottom: '1rem', padding: '0' }}>
+                  <div className="table-wrapper">
+                    <table style={{ fontSize: '0.8125rem' }}>
+                      <thead>
+                        <tr>
+                          <th>Marking Grid</th>
+                          <th style={{ width: '80px', textAlign: 'center' }}>Band</th>
+                          <th style={{ width: '100px', textAlign: 'center' }}>Mark</th>
+                          <th>Justification</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gridAssessments.map((ga, i) => (
+                          <tr key={i}>
+                            <td style={{ fontWeight: 600, color: '#1e293b' }}>{ga.gridName}</td>
+                            <td style={{ textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                backgroundColor: '#e0f2fe',
+                                color: '#0369a1',
+                              }}>Band {ga.bestFitBand}</span>
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '0.9375rem', color: '#0d9488' }}>
+                              {ga.estimatedMark} / {ga.maxMarks}
+                            </td>
+                            <td style={{ color: '#475569', fontSize: '0.8rem' }}>{ga.justification || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr style={{ backgroundColor: '#f1f5f9' }}>
+                          <td style={{ fontWeight: 700 }}>Total</td>
+                          <td></td>
+                          <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#0d9488' }}>
+                            {totalMark} / {maxMarks}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              );
+            }
+
+            // BTEC: render criteria table
             const assessments = criteria?.criteria || sub.holisticAssessment?.criteriaAssessments || [];
             if (assessments.length === 0) return emptyNote('No criteria assessments available.');
             return (
