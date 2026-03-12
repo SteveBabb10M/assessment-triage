@@ -470,6 +470,54 @@ export default function SubmissionReport() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════
+           SECTION 4b: RECOMMENDED NEXT STEPS (Student-Facing)
+           Only renders for standard submissions with unmet criteria.
+           ═══════════════════════════════════════════════════════════ */}
+
+      {!sub.isAdHoc && (() => {
+        const nextSteps = report?.recommendedNextSteps || sub.recommendedNextSteps || [];
+        if (nextSteps.length === 0) return null;
+        return (
+          <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid #86efac' }}>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.25rem', color: '#166534' }}>📝 Recommended Next Steps</h2>
+            <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1rem' }}>
+              Written for the student — can be shared directly as feedback or used to guide 1:1 discussion.
+            </p>
+            {nextSteps.map((step, i) => (
+              <div key={i} style={{
+                background: 'white',
+                borderRadius: '8px',
+                padding: '0.875rem',
+                marginBottom: i < nextSteps.length - 1 ? '0.625rem' : 0,
+                borderLeft: `4px solid ${
+                  (step.currentStatus || '').includes('Not yet met') || (step.currentStatus || '').includes('Not evidenced')
+                    ? '#ef4444'
+                    : (step.currentStatus || '').includes('Partially')
+                      ? '#f59e0b'
+                      : '#0ea5e9'
+                }`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1e293b' }}>{step.criterion}</span>
+                  <span style={{
+                    fontSize: '0.6875rem',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '4px',
+                    fontWeight: 600,
+                    backgroundColor: (step.currentStatus || '').includes('Not yet met') || (step.currentStatus || '').includes('Not evidenced')
+                      ? '#fee2e2' : (step.currentStatus || '').includes('Partially') ? '#fef3c7' : '#e0f2fe',
+                    color: (step.currentStatus || '').includes('Not yet met') || (step.currentStatus || '').includes('Not evidenced')
+                      ? '#991b1b' : (step.currentStatus || '').includes('Partially') ? '#92400e' : '#0369a1',
+                  }}>{step.currentStatus}</span>
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: '#374151', margin: 0, lineHeight: '1.6' }}>{step.whatToDoNext}</p>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════════════════
            SECTION 5: VERIFICATION QUESTIONS
            Always renders.
            ═══════════════════════════════════════════════════════════ */}
