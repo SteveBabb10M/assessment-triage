@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { downloadStudentFeedback } from '../../../../lib/generateStudentFeedback';
 
 // ─── Report Template ────────────────────────────────────────
 // This component IS the report template. Every section renders
@@ -14,6 +15,7 @@ export default function SubmissionReport() {
   const [sub, setSub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     async function fetchSubmission() {
@@ -552,6 +554,25 @@ export default function SubmissionReport() {
       {/* ═══ ACTIONS ═══ */}
       <div className="no-print" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
         <button className="btn" onClick={() => window.print()}>🖨️ Print Report</button>
+        {!sub.isAdHoc && (
+          <button
+            className="btn"
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              try {
+                await downloadStudentFeedback(sub);
+              } catch (err) {
+                console.error('Download failed:', err);
+                alert('Failed to generate feedback document. Please try again.');
+              } finally {
+                setDownloading(false);
+              }
+            }}
+          >
+            {downloading ? '⏳ Generating...' : '📄 Download Student Feedback'}
+          </button>
+        )}
         <a href={`/dashboard/student/${sub.studentId}`} className="btn">View Student Profile</a>
         <a href="/dashboard" className="btn btn-primary">Back to Dashboard</a>
       </div>
