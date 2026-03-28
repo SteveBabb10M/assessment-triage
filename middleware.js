@@ -5,6 +5,41 @@ const publicRoutes = ['/login', '/api/auth/login', '/api/debug'];
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
+
+  // ── Maintenance mode: set MAINTENANCE_MODE=true in Vercel env vars ──
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    // Allow static files through so the maintenance page renders cleanly
+    if (pathname.startsWith('/_next') || pathname.startsWith('/favicon')) {
+      return NextResponse.next();
+    }
+    // API routes return JSON 503
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json(
+        { error: 'Assessment Triage is temporarily offline for maintenance. Please try again later.' },
+        { status: 503 }
+      );
+    }
+    // All other routes show an HTML maintenance page
+    return new NextResponse(
+      `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maintenance — Assessment Triage</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#334155}
+  .card{text-align:center;padding:3rem;max-width:480px}
+  h1{font-size:1.5rem;margin-bottom:.5rem}
+  p{color:#64748b;line-height:1.6}
+  .icon{font-size:2.5rem;margin-bottom:1rem}
+</style></head>
+<body><div class="card">
+  <div class="icon">🔧</div>
+  <h1>Temporarily Offline</h1>
+  <p>Assessment Triage is undergoing maintenance and will be back shortly. No submissions are being processed during this time.</p>
+</div></body></html>`,
+      { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
+  }
   
   // Allow public routes
   if (publicRoutes.some(route => pathname.startsWith(route))) {
